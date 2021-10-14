@@ -1,5 +1,5 @@
 import collections
-from mnist_pytorch_model import create_seed_model
+from mnist_pytorch_model import create_seed_model, Net
 import torch
 from pytorchhelper import PytorchHelper
 import torch.nn.functional as F
@@ -117,3 +117,4 @@ def train_model():
 
 if __name__ == "__main__":
     train_model()
+

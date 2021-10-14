@@ -1,4 +1,3 @@
-import requests as r
 import yaml
 from minio import Minio
 from restservice import ClientRestService
@@ -27,14 +26,10 @@ class Client:
             print("Error while setting up minio configuration")
             exit()
         try:
-            reducer_config = fedn_config["reducer"]
-            client_config = fedn_config["client"]
-            connect_string = "http://{}:{}".format(reducer_config["hostname"], reducer_config["port"])
-            retval = r.get("{}?name={}&port={}".format(connect_string + '/addclient',
-                                                       client_config["hostname"], client_config["port"]))
-            print(retval.json())
             config = {
-                "flask_port": client_config["port"],
+                "flask_port": fedn_config["client"]["port"],
+                "reducer": fedn_config["reducer"],
+                "client_config": fedn_config["client"]
             }
             self.rest = ClientRestService(self.minio_client, config)
         except Exception as e:

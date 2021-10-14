@@ -1,0 +1,13 @@
+version: "3.3"
+
+services:
+  client:
+    image: "pytorch/pytorch:1.9.0-cuda11.1-cudnn8-runtime"
+    command: python -c "import torch; print(torch.cuda.is_available()); print(torch.__version__)"
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: "nvidia"
+            device_ids: ['0']
+            capabilities: [ gpu ]

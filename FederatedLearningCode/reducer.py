@@ -1,18 +1,7 @@
-import os
 import yaml
-import threading
 from minio import Minio
 from restservice import ReducerRestService
-
-
-# from s3.s3repo import S3ModelRepository
-# from fedn.clients.reducer.control import ReducerControl
-# from fedn.clients.reducer.interfaces import ReducerInferenceInterface
-# from fedn.clients.reducer.restservice import ReducerRestService
-# from fedn.clients.reducer.state import ReducerStateToString
-# from fedn.common.security.certificatemanager import CertificateManager
-# from fedn.clients.reducer.statestore.mongoreducerstatestore import MongoReducerStateStore
-
+import torch
 
 class Reducer:
     def __init__(self):
@@ -45,7 +34,7 @@ class Reducer:
 
         config = {
             "flask_port": fedn_config["flask"]["port"],
-            "global_model" : self.global_model
+            "global_model": self.global_model
         }
         self.rest = ReducerRestService(self.minio_client, config)
 
@@ -55,6 +44,8 @@ class Reducer:
 
 
 if __name__ == "__main__":
+    if not print(torch.cuda.is_available()):
+        exit()
     try:
         reducer = Reducer()
         reducer.run()
