@@ -1,4 +1,6 @@
 ipynb_checkpoints
 /__pycache__
 /data
-
+/.idea
+FederatedLearningCode/venv
+FederatedLearningCode/.idea
