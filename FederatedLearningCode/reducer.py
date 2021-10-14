@@ -1,7 +1,7 @@
 import yaml
 from minio import Minio
 from restservice import ReducerRestService
-import torch
+
 
 class Reducer:
     def __init__(self):
@@ -44,8 +44,6 @@ class Reducer:
 
 
 if __name__ == "__main__":
-    if not print(torch.cuda.is_available()):
-        exit()
     try:
         reducer = Reducer()
         reducer.run()

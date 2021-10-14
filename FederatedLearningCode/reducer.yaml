@@ -23,11 +23,11 @@ services:
       - minio-data:/data
 
   reducer:
-    image: "python:3.8.9"
+    image: "pytorch/pytorch:1.9.0-cuda11.1-cudnn8-runtime"
     working_dir: /app/
     command: sh -c "pip install -r requirements.txt && python reducer.py"
     volumes:
-      - "D:/FederatedLearningCode:/app"
+      - "/home/kobe/Desktop/HardCoreNAS-FederatedLearning/FederatedLearningCode:/app"
     ports:
       - 8090:8090
 

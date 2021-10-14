@@ -1,8 +1,7 @@
 import collections
-from mnist_pytorch_model import create_seed_model, Net
+from mnist_pytorch_model import create_seed_model
 import torch
 from pytorchhelper import PytorchHelper
-import torch.nn.functional as F
 import numpy as np
 from torch.utils.data import TensorDataset, DataLoader
 
@@ -98,7 +97,7 @@ def train(model, loss, optimizer, settings):
 
 def train_model():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(device)
+    print("Device being used for training :", device)
     helper = PytorchHelper()
     model, loss, optimizer = create_seed_model()
     model.load_state_dict(np_to_weights(helper.load_model("weights.npz")))
@@ -116,5 +115,5 @@ def train_model():
 
 
 if __name__ == "__main__":
-    train_model()
+    print(train_model(), flush=True)
 
