@@ -1,8 +1,9 @@
 version: "3.3"
 
 services:
-  client2:
+  client:
     image: "pytorch/pytorch:1.9.0-cuda11.1-cudnn8-runtime"
+    container_name: "client"
     working_dir: /app/
     command: sh -c "pip install -r requirements.txt && python client.py"
     volumes:
