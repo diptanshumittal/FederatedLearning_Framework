@@ -9,8 +9,10 @@ Jinja2==3.0.2
 MarkupSafe==2.0.1
 minio==7.1.1
 numpy==1.21.2
+pip-chill==1.0.1
 PyYAML==5.4.1
 requests==2.26.0
 typing-extensions==3.10.0.2
 urllib3==1.26.7
 Werkzeug==2.0.2
+torch~=1.9.1

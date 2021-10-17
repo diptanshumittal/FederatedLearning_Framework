@@ -1,7 +1,8 @@
 import yaml
 from minio import Minio
 import torch
-from clientrestservice import ClientRestService
+from client_rest_service import ClientRestService
+from model_trainer import PytorchModelTrainer
 
 
 class Client:
@@ -12,6 +13,7 @@ class Client:
                 fedn_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
                 print('Failed to read config from settings file, exiting.', flush=True)
+                exit()
                 raise e
         print("Settings file loaded successfully !!!")
         try:
@@ -28,16 +30,25 @@ class Client:
             print("Error while setting up minio configuration")
             exit()
         print("Minio client connected successfully !!!")
+
         try:
-            print("here")
+            self.model_trainer = PytorchModelTrainer(fedn_config["training"])
+        except Exception as e:
+            print("Error in model trainer setup ", e)
+            exit()
+        print("Model Trainer setup successful!!!")
+
+        try:
             config = {
                 "flask_port": fedn_config["client"]["port"],
                 "reducer": fedn_config["reducer"],
-                "client_config": fedn_config["client"]
+                "client_config": fedn_config["client"],
+                "global_model_path": fedn_config["training"]["global_model_path"]
             }
-            self.rest = ClientRestService(self.minio_client, config)
+            self.rest = ClientRestService(self.minio_client, self.model_trainer, config)
         except Exception as e:
-            print(e)
+            print("Error in setting up Rest Service", e)
+            exit()
         print("Reducer connected successfully !!!")
 
     def run(self):

@@ -26,3 +26,8 @@ storage:
     storage_access_key: fedn_admin
     storage_secret_key: password
     storage_secure_mode: False
+
+training:
+  data_path: data/mnist.npz
+  batch_size: 1000
+  global_model_path: weights.npz

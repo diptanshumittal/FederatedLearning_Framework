@@ -1,6 +1,6 @@
 import yaml
 from minio import Minio
-from restservice import ReducerRestService
+from reducer_rest_service import ReducerRestService
 
 
 class Reducer:
