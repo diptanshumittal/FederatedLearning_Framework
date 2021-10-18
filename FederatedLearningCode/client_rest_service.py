@@ -1,37 +1,17 @@
 import uuid
-from flask import Flask, jsonify, request
-import requests as r
 import threading
-
-
-class Server:
-    def __init__(self, name, port):
-        self.name = name
-        self.port = port
-        self.connect_string = "http://{}:{}".format(self.name, self.port)
-
-    def send_round_complete_request(self, round_id):
-        r.get("{}?round_id={}".format(self.connect_string + '/roundcompletedbyclient', round_id))
-
-    def connect_with_server(self, client_config):
-        retval = r.get("{}?name={}&port={}".format(self.connect_string + '/addclient',
-                                                   client_config["hostname"], client_config["port"]))
-        if retval.json()['status'] == "added":
-            return True
-        return False
+from flask import Flask, jsonify, request
 
 
 class ClientRestService:
 
-    def __init__(self, minio_client, model_trainer, config):
+    def __init__(self, config):
         print(config)
-        self.model_trainer = model_trainer
-        self.minio_client = minio_client
+        self.model_trainer = config["model_trainer"]
+        self.minio_client = config["minio_client"]
         self.port = config['flask_port']
-        self.server = Server(config["reducer"]["hostname"], config["reducer"]["port"])
+        self.server = config["server"]
         self.global_model_path = config["global_model_path"]
-        if not self.server.connect_with_server(config["client_config"]):
-            raise
 
     def run(self):
         app = Flask(__name__)
@@ -45,15 +25,11 @@ class ClientRestService:
 
         @app.route('/startround')
         def start_round():
-            try:
-                epochs = int(request.args.get('epochs', None))
-            except Exception as e:
-                epochs = 1
             config = {
                 "round_id": request.args.get('round_id', None),
                 "bucket_name": request.args.get('bucket_name', None),
                 "global_model": request.args.get('global_model', None),
-                "epochs": epochs
+                "epochs": int(request.args.get('epochs', "1"))
             }
             threading.Thread(target=self.run_round, args=(config,)).start()
             ret = {
@@ -66,7 +42,7 @@ class ClientRestService:
     def run_round(self, config):
         print("Running round - ", config["round_id"], flush=True)
         self.minio_client.fget_object('fedn-context', config["global_model"], self.global_model_path)
-        self.model_trainer.start_round({"epochs": config["epochs"]})
+        print(self.model_trainer.start_round({"epochs": config["epochs"]}))
         self.minio_client.fput_object(config["bucket_name"], str(uuid.uuid4()) + ".npz", self.global_model_path)
         self.server.send_round_complete_request(config["round_id"])
         print("Round ended successfully and notification sent to server", flush=True)

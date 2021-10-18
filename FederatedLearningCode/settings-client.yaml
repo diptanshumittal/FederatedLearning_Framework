@@ -28,6 +28,6 @@ storage:
     storage_secure_mode: False
 
 training:
-  data_path: data/mnist.npz
+  data_path: data/mnist1.npz
   batch_size: 1000
-  global_model_path: weights.npz
+  global_model_path: weights1.npz
