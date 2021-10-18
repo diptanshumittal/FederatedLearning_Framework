@@ -90,12 +90,11 @@ class PytorchModelTrainer:
 if __name__ == "__main__":
     setup_config = {
         "data_path": "data/mnist.npz",
+        "global_model_path": "weights.npz",
         "batch_size": 1000
     }
     modelTrainer = PytorchModelTrainer(setup_config)
     settings = {
-        "epochs": 1
+        "epochs": 2
     }
-    modelTrainer.start_round("weights.npz", settings)
-    modelTrainer.start_round("weights.npz", settings)
-    modelTrainer.start_round("weights.npz", settings)
+    print(modelTrainer.start_round(settings))
