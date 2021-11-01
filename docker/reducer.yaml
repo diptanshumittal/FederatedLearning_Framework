@@ -1,0 +1,12 @@
+version: '3.3'
+
+services:
+  reducer:
+    image: "pytorch/pytorch:1.9.0-cuda11.1-cudnn8-runtime"
+    container_name: "reducer"
+    working_dir: /app/
+    command: sh -c "pip install -r requirements.txt && python reducer.py"
+    volumes:
+      - "/home/diptanshu18232/temp/FederatedLearning_Framework/FederatedLearningCode:/app"
+    ports:
+      - 8090:8090

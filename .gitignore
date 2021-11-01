@@ -1,7 +1,6 @@
-ipynb_checkpoints
 /__pycache__
-/data
 /.idea
-FederatedLearningCode/venv
-FederatedLearningCode/__pycache__
-FederatedLearningCode/.idea
+/venv
+/weights/clients/*
+/logs/*
+/data/clients/*

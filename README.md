@@ -1,1 +1,1 @@
-# HardCoreNAS-FederatedLearning
+# Federated Learning Framework

@@ -1,0 +1,327 @@
+Attaching to client3
+[36mclient3    |[0m Collecting certifi==2021.10.8
+[36mclient3    |[0m   Downloading certifi-2021.10.8-py2.py3-none-any.whl (149 kB)
+[36mclient3    |[0m Collecting charset-normalizer==2.0.7
+[36mclient3    |[0m   Downloading charset_normalizer-2.0.7-py3-none-any.whl (38 kB)
+[36mclient3    |[0m Collecting click==8.0.3
+[36mclient3    |[0m   Downloading click-8.0.3-py3-none-any.whl (97 kB)
+[36mclient3    |[0m Collecting colorama==0.4.4
+[36mclient3    |[0m   Downloading colorama-0.4.4-py2.py3-none-any.whl (16 kB)
+[36mclient3    |[0m Collecting Flask==2.0.2
+[36mclient3    |[0m   Downloading Flask-2.0.2-py3-none-any.whl (95 kB)
+[36mclient3    |[0m Collecting idna==3.3
+[36mclient3    |[0m   Downloading idna-3.3-py3-none-any.whl (61 kB)
+[36mclient3    |[0m Collecting itsdangerous==2.0.1
+[36mclient3    |[0m   Downloading itsdangerous-2.0.1-py3-none-any.whl (18 kB)
+[36mclient3    |[0m Collecting Jinja2==3.0.2
+[36mclient3    |[0m   Downloading Jinja2-3.0.2-py3-none-any.whl (133 kB)
+[36mclient3    |[0m Requirement already satisfied: MarkupSafe==2.0.1 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 9)) (2.0.1)
+[36mclient3    |[0m Collecting minio==7.1.1
+[36mclient3    |[0m   Downloading minio-7.1.1-py3-none-any.whl (75 kB)
+[36mclient3    |[0m Collecting numpy==1.21.2
+[36mclient3    |[0m   Downloading numpy-1.21.2-cp37-cp37m-manylinux_2_12_x86_64.manylinux2010_x86_64.whl (15.7 MB)
+[36mclient3    |[0m Collecting pip-chill==1.0.1
+[36mclient3    |[0m   Downloading pip_chill-1.0.1-py2.py3-none-any.whl (6.8 kB)
+[36mclient3    |[0m Requirement already satisfied: PyYAML==5.4.1 in /opt/conda/lib/python3.7/site-packages (from -r requirements.txt (line 13)) (5.4.1)
+[36mclient3    |[0m Collecting requests==2.26.0
+[36mclient3    |[0m   Downloading requests-2.26.0-py2.py3-none-any.whl (62 kB)
+[36mclient3    |[0m Collecting typing-extensions==3.10.0.2
+[36mclient3    |[0m   Downloading typing_extensions-3.10.0.2-py3-none-any.whl (26 kB)
+[36mclient3    |[0m Collecting urllib3==1.26.7
+[36mclient3    |[0m   Downloading urllib3-1.26.7-py2.py3-none-any.whl (138 kB)
+[36mclient3    |[0m Collecting Werkzeug==2.0.2
+[36mclient3    |[0m   Downloading Werkzeug-2.0.2-py3-none-any.whl (288 kB)
+[36mclient3    |[0m Collecting importlib-metadata
+[36mclient3    |[0m   Downloading importlib_metadata-4.8.1-py3-none-any.whl (17 kB)
+[36mclient3    |[0m Collecting zipp>=0.5
+[36mclient3    |[0m   Downloading zipp-3.6.0-py3-none-any.whl (5.3 kB)
+[36mclient3    |[0m Installing collected packages: zipp, typing-extensions, importlib-metadata, Werkzeug, urllib3, Jinja2, itsdangerous, idna, click, charset-normalizer, certifi, requests, pip-chill, numpy, minio, Flask, colorama
+[36mclient3    |[0m   Attempting uninstall: typing-extensions
+[36mclient3    |[0m     Found existing installation: typing-extensions 3.7.4.3
+[36mclient3    |[0m     Uninstalling typing-extensions-3.7.4.3:
+[36mclient3    |[0m       Successfully uninstalled typing-extensions-3.7.4.3
+[36mclient3    |[0m   Attempting uninstall: urllib3
+[36mclient3    |[0m     Found existing installation: urllib3 1.25.11
+[36mclient3    |[0m     Uninstalling urllib3-1.25.11:
+[36mclient3    |[0m       Successfully uninstalled urllib3-1.25.11
+[36mclient3    |[0m   Attempting uninstall: Jinja2
+[36mclient3    |[0m     Found existing installation: Jinja2 3.0.0
+[36mclient3    |[0m     Uninstalling Jinja2-3.0.0:
+[36mclient3    |[0m       Successfully uninstalled Jinja2-3.0.0
+[36mclient3    |[0m   Attempting uninstall: idna
+[36mclient3    |[0m     Found existing installation: idna 2.10
+[36mclient3    |[0m     Uninstalling idna-2.10:
+[36mclient3    |[0m       Successfully uninstalled idna-2.10
+[36mclient3    |[0m   Attempting uninstall: certifi
+[36mclient3    |[0m     Found existing installation: certifi 2021.5.30
+[36mclient3    |[0m     Uninstalling certifi-2021.5.30:
+[36mclient3    |[0m       Successfully uninstalled certifi-2021.5.30
+[36mclient3    |[0m   Attempting uninstall: requests
+[36mclient3    |[0m     Found existing installation: requests 2.24.0
+[36mclient3    |[0m     Uninstalling requests-2.24.0:
+[36mclient3    |[0m       Successfully uninstalled requests-2.24.0
+[36mclient3    |[0m   Attempting uninstall: numpy
+[36mclient3    |[0m     Found existing installation: numpy 1.20.2
+[36mclient3    |[0m     Uninstalling numpy-1.20.2:
+[36mclient3    |[0m       Successfully uninstalled numpy-1.20.2
+[36mclient3    |[0m Successfully installed Flask-2.0.2 Jinja2-3.0.2 Werkzeug-2.0.2 certifi-2021.10.8 charset-normalizer-2.0.7 click-8.0.3 colorama-0.4.4 idna-3.3 importlib-metadata-4.8.1 itsdangerous-2.0.1 minio-7.1.1 numpy-1.21.2 pip-chill-1.0.1 requests-2.26.0 typing-extensions-3.10.0.2 urllib3-1.26.7 zipp-3.6.0
+[36mclient3    |[0m WARNING: Running pip as root will break packages and permissions. You should install packages reliably by using venv: https://pip.pypa.io/warnings/venv
+[36mclient3    |[0m Settings file loaded successfully !!!
+[36mclient3    |[0m Minio client connected successfully !!!
+[36mclient3    |[0m Device being used for training : cuda
+[36mclient3    |[0m Model Trainer setup successful!!!
+[36mclient3    |[0m {'server': <__main__.Server object at 0x7f74c8588550>, 'minio_client': <minio.api.Minio object at 0x7f74d059d190>, 'model_trainer': <model_trainer.PytorchModelTrainer object at 0x7f74d059d290>, 'flask_port': 8093, 'global_model_path': 'weights3.npz'}
+[36mclient3    |[0m Reducer connected successfully adn rest service started!!!
+[36mclient3    |[0m ------------Starting Rest service on Flask server----------
+[36mclient3    |[0m  * Serving Flask app 'client_rest_service' (lazy loading)
+[36mclient3    |[0m  * Environment: production
+[36mclient3    |[0m    WARNING: This is a development server. Do not use it in a production deployment.
+[36mclient3    |[0m    Use a production WSGI server instead.
+[36mclient3    |[0m  * Debug mode: off
+[36mclient3    |[0m  * Running on all addresses.
+[36mclient3    |[0m    WARNING: This is a development server. Do not use it in a production deployment.
+[36mclient3    |[0m  * Running on http://172.18.0.6:8093/ (Press CTRL+C to quit)
+[36mclient3    |[0m Running round -  1
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 19:56:06] "GET /startround?round_id=1&bucket_name=round1&global_model=initial_model.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 1.1441736311705124e-07, 'training_accuracy': 1.0, 'test_loss': 0.0017731747031211854, 'test_accuracy': 0.99}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  2
+[36mclient3    |[0m /opt/conda/lib/python3.7/site-packages/torch/nn/functional.py:718: UserWarning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (Triggered internally at  /opt/conda/conda-bld/pytorch_1623448265233/work/c10/core/TensorImpl.h:1156.)
+[36mclient3    |[0m   return torch.max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode)
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 19:58:02] "GET /startround?round_id=2&bucket_name=round2&global_model=e9e84bfd-f8f8-4c30-989e-53656555885a.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 2.8555716028222377e-08, 'training_accuracy': 1.0, 'test_loss': 0.0014989954829216004, 'test_accuracy': 0.993}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  3
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 19:59:56] "GET /startround?round_id=3&bucket_name=round3&global_model=e1d4bca0-86fb-4393-a593-868114e2effa.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 7.355373979104721e-08, 'training_accuracy': 1.0, 'test_loss': 0.0012525361478328706, 'test_accuracy': 0.993}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  4
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:01:50] "GET /startround?round_id=4&bucket_name=round4&global_model=88f22040-f832-45fd-a003-1b80533ab605.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 1.037329702550475e-08, 'training_accuracy': 1.0, 'test_loss': 0.001087775081396103, 'test_accuracy': 0.9935}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  5
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:03:43] "GET /startround?round_id=5&bucket_name=round5&global_model=58b5a1c9-83d3-4271-b8dc-940cb9b085d8.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 5.736475188200529e-09, 'training_accuracy': 1.0, 'test_loss': 0.0011063891649246216, 'test_accuracy': 0.995}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  6
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:05:37] "GET /startround?round_id=6&bucket_name=round6&global_model=fe77f312-f14a-4a53-b090-21b4919df5dd.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 3.405947105269055e-08, 'training_accuracy': 1.0, 'test_loss': 0.000930803045630455, 'test_accuracy': 0.9965}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  7
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:07:30] "GET /startround?round_id=7&bucket_name=round7&global_model=dd08b27f-0b56-424f-8a02-d57b934f3b67.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 5.60730391067447e-09, 'training_accuracy': 1.0, 'test_loss': 0.0012653035223484039, 'test_accuracy': 0.9945}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  8
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:09:24] "GET /startround?round_id=8&bucket_name=round8&global_model=7975706a-e256-4b69-975b-ec6815370bfe.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 3.271969078847784e-08, 'training_accuracy': 1.0, 'test_loss': 0.0012934865951538086, 'test_accuracy': 0.993}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  9
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:11:18] "GET /startround?round_id=9&bucket_name=round9&global_model=e2c86005-e162-4bbd-abd5-eff1e6885ca3.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 1.7901522735286334e-09, 'training_accuracy': 1.0, 'test_loss': 0.0013562840223312377, 'test_accuracy': 0.9945}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  10
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:13:11] "GET /startround?round_id=10&bucket_name=round10&global_model=4a985f61-2c2f-4548-84e9-07677df37839.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 1.9491919876675942e-09, 'training_accuracy': 1.0, 'test_loss': 0.0013088203072547913, 'test_accuracy': 0.993}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  11
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:15:05] "GET /startround?round_id=11&bucket_name=round11&global_model=4efc7783-8253-4979-83a8-301573e26468.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 4.177496485624488e-09, 'training_accuracy': 1.0, 'test_loss': 0.001448694884777069, 'test_accuracy': 0.9945}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  12
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:16:59] "GET /startround?round_id=12&bucket_name=round12&global_model=66bec42c-d5d0-46dc-ba0f-48ec72f23767.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 6.253486660886172e-08, 'training_accuracy': 1.0, 'test_loss': 0.0017911627888679504, 'test_accuracy': 0.9945}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  13
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:18:52] "GET /startround?round_id=13&bucket_name=round13&global_model=f085ea66-8463-40ac-a7b3-76e558c17c8f.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 1.0817086601851619e-08, 'training_accuracy': 1.0, 'test_loss': 0.0015188268423080445, 'test_accuracy': 0.9925}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  14
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:20:46] "GET /startround?round_id=14&bucket_name=round14&global_model=f9609356-d12d-49ee-83f4-37fda25b4310.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 7.648242175140041e-10, 'training_accuracy': 1.0, 'test_loss': 0.0015854867696762085, 'test_accuracy': 0.9935}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  15
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:22:39] "GET /startround?round_id=15&bucket_name=round15&global_model=e65dd72f-870a-44d9-bcc8-37b6e2fe88f3.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 1.1468403734227195e-08, 'training_accuracy': 1.0, 'test_loss': 0.0012382598519325256, 'test_accuracy': 0.9935}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  16
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:24:33] "GET /startround?round_id=16&bucket_name=round16&global_model=45b25312-ac2a-431b-a52c-6a3961675af0.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 2.862222930370232e-09, 'training_accuracy': 1.0, 'test_loss': 0.0020634045600891114, 'test_accuracy': 0.992}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  17
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:26:27] "GET /startround?round_id=17&bucket_name=round17&global_model=2d1143a8-fcad-41d8-b6ef-4fe3a5a70658.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 2.3079557360065432e-09, 'training_accuracy': 1.0, 'test_loss': 0.001525956690311432, 'test_accuracy': 0.994}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  18
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:28:20] "GET /startround?round_id=18&bucket_name=round18&global_model=86e184a5-c72d-41cc-8c62-a281c5783ba1.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 6.850445587088434e-10, 'training_accuracy': 1.0, 'test_loss': 0.0013253977000713347, 'test_accuracy': 0.995}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  19
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:30:14] "GET /startround?round_id=19&bucket_name=round19&global_model=8d76be22-dc97-4f56-bd84-a735adff593f.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 2.3910417148442774e-09, 'training_accuracy': 1.0, 'test_loss': 0.0013285786509513854, 'test_accuracy': 0.994}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  20
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:32:08] "GET /startround?round_id=20&bucket_name=round20&global_model=30c2b854-b2e6-48bb-8c09-43523a0d120c.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 4.828688526063255e-10, 'training_accuracy': 1.0, 'test_loss': 0.001613695740699768, 'test_accuracy': 0.994}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  21
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:34:01] "GET /startround?round_id=21&bucket_name=round21&global_model=022d5752-b19b-4a90-9b40-5255475d9a07.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 2.889547967566131e-10, 'training_accuracy': 1.0, 'test_loss': 0.00144941246509552, 'test_accuracy': 0.995}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  22
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:35:55] "GET /startround?round_id=22&bucket_name=round22&global_model=65aefd6c-35b5-4dc4-b4c0-7e17d467222c.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 4.780977009843923e-10, 'training_accuracy': 1.0, 'test_loss': 0.0013445837795734406, 'test_accuracy': 0.996}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  23
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:37:48] "GET /startround?round_id=23&bucket_name=round23&global_model=555da107-569b-4277-b657-15b0c9d0f0c2.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 5.073240126514852e-10, 'training_accuracy': 1.0, 'test_loss': 0.0018671055436134338, 'test_accuracy': 0.992}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  24
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:39:42] "GET /startround?round_id=24&bucket_name=round24&global_model=d3fd5f51-21a5-4f0e-9ef2-df904c5bab74.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 2.8292299466177912e-11, 'training_accuracy': 1.0, 'test_loss': 0.0014512655586004257, 'test_accuracy': 0.9935}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  25
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:41:36] "GET /startround?round_id=25&bucket_name=round25&global_model=36512997-342c-431e-8470-32a64d91efc7.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 4.3724421688059084e-08, 'training_accuracy': 1.0, 'test_loss': 0.0012666202783584595, 'test_accuracy': 0.9935}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  26
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:43:29] "GET /startround?round_id=26&bucket_name=round26&global_model=364624ce-f43c-4fd6-83d1-734898d4ce6b.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 9.822813414513595e-11, 'training_accuracy': 1.0, 'test_loss': 0.001508096158504486, 'test_accuracy': 0.994}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  27
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:45:23] "GET /startround?round_id=27&bucket_name=round27&global_model=bba3f4b7-b509-4409-98ce-4e4bb7c3567e.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 9.949942011052333e-11, 'training_accuracy': 1.0, 'test_loss': 0.0016454949975013733, 'test_accuracy': 0.9935}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  28
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:47:16] "GET /startround?round_id=28&bucket_name=round28&global_model=2bd53781-6bb5-4519-b424-c0e9d0c65fad.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 8.388496368638698e-10, 'training_accuracy': 1.0, 'test_loss': 0.002114294946193695, 'test_accuracy': 0.9935}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  29
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:49:10] "GET /startround?round_id=29&bucket_name=round29&global_model=2b162e7c-0c6f-4b36-91d9-9e031c1ff273.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 3.5412037939034726e-10, 'training_accuracy': 1.0, 'test_loss': 0.001898358851671219, 'test_accuracy': 0.994}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3    |[0m Running round -  30
+[36mclient3    |[0m 172.18.0.1 - - [26/Oct/2021 20:51:04] "GET /startround?round_id=30&bucket_name=round30&global_model=b84b6374-2777-420b-892a-d4b7da5be9a6.npz&epochs=100 HTTP/1.1" 200 -
+[36mclient3    |[0m -- RUNNING TRAINING --
+[36mclient3    |[0m -- TRAINING COMPLETED --
+[36mclient3    |[0m -- RUNNING VALIDATION --
+[36mclient3    |[0m -- VALIDATION COMPLETE! --
+[36mclient3    |[0m {'classification_report': 'evaluated', 'training_loss': 2.765634151321213e-10, 'training_accuracy': 1.0, 'test_loss': 0.001498352825641632, 'test_accuracy': 0.995}
+[36mclient3    |[0m Round ended successfully and notification sent to server
+[36mclient3 exited with code 137
+[0m
