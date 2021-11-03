@@ -1,7 +1,7 @@
 services:
-  client5:
+  client1:
     command: sh -c "pip install -r requirements.txt && python client.py"
-    container_name: client5
+    container_name: client1
     deploy:
       resources:
         reservations:
@@ -9,12 +9,12 @@ services:
           - capabilities:
             - gpu
             device_ids:
-            - MIG-GPU-6ff250df-07f5-cf8e-bfdb-d56c3c464126/2/0
+            - '0'
             driver: nvidia
     image: pytorch/pytorch:1.9.0-cuda11.1-cudnn8-runtime
     ports:
-    - 8095:8095
+    - "8091:8091"
     volumes:
-    - /home/diptanshu18232/temp/FederatedLearning_Framework/FederatedLearningCode:/app
+    - "~/Desktop/FederatedLearning_Framework:/app"
     working_dir: /app/
 version: '3.3'

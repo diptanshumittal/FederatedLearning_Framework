@@ -1,12 +1,12 @@
 import yaml
 from minio import Minio
-from reducer_rest_service import ReducerRestService
+from reducer.reducer_rest_service import ReducerRestService
 
 
 class Reducer:
     def __init__(self):
         """ """
-        with open("../settings/settings-reducer.yaml", 'r') as file:
+        with open("settings/settings-reducer.yaml", 'r') as file:
             try:
                 fedn_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
@@ -26,7 +26,7 @@ class Reducer:
                     self.minio_client.make_bucket(bucket)
             print(self.minio_client.bucket_exists(self.buckets[0]))
             self.global_model = "initial_model.npz"
-            self.global_model_path = "../weights/initial_model.npz"
+            self.global_model_path = "weights/initial_model.npz"
             self.minio_client.fput_object(self.buckets[0], self.global_model, self.global_model_path)
         except Exception as e:
             print(e)

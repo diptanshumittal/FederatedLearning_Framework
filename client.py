@@ -4,20 +4,22 @@ import yaml
 from minio import Minio
 import torch
 import requests as r
-from client_rest_service import ClientRestService
+from client.client_rest_service import ClientRestService
 from model.model_trainer import PytorchModelTrainer
 
 
 class Server:
-    def __init__(self, name, port):
+    def __init__(self, name, port, id):
+        self.id = id
         self.name = name
         self.port = port
         self.connected = False
         self.connect_string = "http://{}:{}".format(self.name, self.port)
 
-    def send_round_complete_request(self, round_id):
+    def send_round_complete_request(self, round_id, report):
         try:
-            r.get("{}?round_id={}".format(self.connect_string + '/roundcompletedbyclient', round_id))
+            r.get("{}?round_id={}&client_id={}&report={}".format(self.connect_string + '/roundcompletedbyclient',
+                                                                 round_id, self.id, report))
         except Exception as e:
             return False
 
@@ -50,7 +52,7 @@ class Server:
 class Client:
     def __init__(self):
         """ """
-        with open("../settings/settings-client.yaml", 'r') as file:
+        with open("settings/settings-client.yaml", 'r') as file:
             try:
                 fedn_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
@@ -81,8 +83,9 @@ class Client:
         print("Model Trainer setup successful!!!")
 
         try:
+            self.id = fedn_config["client"]["hostname"] + ":" + str(fedn_config["client"]["port"])
             self.client_config = fedn_config["client"]
-            self.server = Server(fedn_config["reducer"]["hostname"], fedn_config["reducer"]["port"])
+            self.server = Server(fedn_config["reducer"]["hostname"], fedn_config["reducer"]["port"], self.id)
             if not self.server.connect_with_server(fedn_config["client"]):
                 print("here")
                 raise
@@ -113,7 +116,7 @@ class Client:
                 else:
                     x = 10
             if not self.server.connected:
-                print("Server health check status : ", self.server.connected)
+                print("Server health check status : ", self.server.connected, flush=True)
             time.sleep(x)
 
     def run(self):

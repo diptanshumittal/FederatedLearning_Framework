@@ -1,19 +1,24 @@
 import time
 import uuid
+import matplotlib.pyplot as plt
+import numpy as np
 from flask import Flask, jsonify, request
 import requests as r
 import threading
 import os
 from helper.pytorch_helper import PytorchHelper
 from functools import wraps
+import json
 
 
 class Client:
-    def __init__(self, name, port):
+    def __init__(self, name, port, rounds):
         self.name = name
         self.port = port
         self.connect_string = "http://{}:{}".format(self.name, self.port)
         self.last_checked = time.time()
+        self.training_acc = [0] * rounds
+        self.testing_acc = [0] * rounds
 
     def send_round_start_request(self, round_id, bucket_name, global_model, epochs):
         r.get("{}?round_id={}&bucket_name={}&global_model={}&epochs={}".format(self.connect_string + '/startround',
@@ -43,7 +48,7 @@ class ReducerRestService:
         while True:
             self.clients = {client: self.clients[client] for client in self.clients if
                             self.clients[client].get_last_checked() < 15}
-            print("Remaining clients - ", self.clients)
+            print("Remaining clients - ", self.clients, flush=True)
             time.sleep(30)
 
     def run(self):
@@ -73,7 +78,7 @@ class ReducerRestService:
         def add_client():
             name = request.args.get('name', None)
             port = request.args.get('port', None)
-            self.clients[name + ":" + port] = Client(name, port)
+            self.clients[name + ":" + port] = Client(name, port, self.rounds)
             ret = {
                 'status': "added"
             }
@@ -95,6 +100,17 @@ class ReducerRestService:
         @app.route('/roundcompletedbyclient')
         def round_completed_by_client():
             if self.rounds == int(request.args.get('round_id', None)):
+                id = request.args.get("client_id", None)
+                if id in self.clients:
+                    res = json.loads(request.args.get("report", None))
+                    if res is None:
+                        res["training_accuracy"] = 0
+                        res["test_accuracy"] = 0
+                    else:
+                        res["training_accuracy"] = float(res["training_accuracy"])
+                        res["test_accuracy"] = float(res["test_accuracy"])
+                    self.clients[id].training_acc.append(res["training_accuracy"])
+                    self.clients[id].testing_acc.append(res["test_accuracy"])
                 self.clients_updated -= 1
             ret = {
                 'status': "Details updated"
@@ -116,6 +132,24 @@ class ReducerRestService:
                     'status': "Not Available"
                 }
                 return jsonify(ret)
+
+        @app.route('/creategraph')
+        def create_graph():
+            for key, client in self.clients.items():
+                x = np.linspace(1, len(client.training_acc), len(client.training_acc))
+                print(x)
+                print(client.training_acc)
+                plt.plot(x, client.training_acc, "-b", label="Train_Acc")
+                plt.plot(x, client.testing_acc, "-r", label="Test_Acc")
+                plt.legend(loc="upper right")
+                plt.xlabel("Rounds")
+                plt.ylabel("Accuracy")
+                plt.title("Rounds vs Accuracy for client : " + key)
+                plt.savefig(key + '.png')
+            ret = {
+                'status': "Created"
+            }
+            return jsonify(ret)
 
         app.run(host="0.0.0.0", port=self.port)
 
