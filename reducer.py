@@ -1,5 +1,10 @@
 import yaml
+import os
 from minio import Minio
+
+from helper.pytorch_helper import PytorchHelper
+from model.mnist_pytorch_model import create_seed_model
+from model_trainer import weights_to_np
 from reducer.reducer_rest_service import ReducerRestService
 
 
@@ -25,8 +30,13 @@ class Reducer:
                 if not self.minio_client.bucket_exists(bucket):
                     self.minio_client.make_bucket(bucket)
             print(self.minio_client.bucket_exists(self.buckets[0]))
+            if not os.path.exists('data/reducer'):
+                os.mkdir('data/reducer')
             self.global_model = "initial_model.npz"
-            self.global_model_path = "weights/initial_model.npz"
+            self.global_model_path = "data/reducer/initial_model.npz"
+            model, loss, optimizer = create_seed_model()
+            helper = PytorchHelper()
+            helper.save_model(weights_to_np(model.state_dict()), self.global_model_path)
             self.minio_client.fput_object(self.buckets[0], self.global_model, self.global_model_path)
         except Exception as e:
             print(e)

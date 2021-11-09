@@ -3,4 +3,10 @@
 /venv
 /weights/clients/*
 /logs/*
-/data/clients/*
+/data/clients
+/client/__pycache__
+/helper/__pycache__
+/model/__pycache__
+/reducer/__pycache__
+/weights
+/data/reducer

@@ -16,7 +16,7 @@ flask:
 storage:
   storage_type: S3
   storage_config:
-    storage_hostname: 192.168.1.6
+    storage_hostname: 192.168.3.19
     storage_port: 9000
     storage_access_key: fedn_admin
     storage_secret_key: password

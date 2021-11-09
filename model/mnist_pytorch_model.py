@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 # Create an initial CNN Model
 def create_seed_model():
-    model = Net()
+    model = AlexNet()
     loss = nn.NLLLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, eps=1e-07)
     return model, loss, optimizer

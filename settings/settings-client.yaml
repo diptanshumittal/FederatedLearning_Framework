@@ -1,19 +1,20 @@
 client:
-  hostname: 192.168.1.6
+  hostname: 192.168.3.19
   port: 8091
 reducer:
-  hostname: 192.168.1.6
+  hostname: 192.168.3.19
   port: 8090
 storage:
   storage_config:
     storage_access_key: fedn_admin
-    storage_hostname: 192.168.1.6
+    storage_hostname: 192.168.3.19
     storage_port: 9000
     storage_secret_key: password
     storage_secure_mode: false
   storage_type: S3
 training:
-  batch_size: 1000
+  batch_size: 32
   cuda_device: '0'
   data_path: data/clients/1/mnist.npz
-  global_model_path: weights/clients/weights1.npz
+  global_model_path: data/clients/1/weights.npz
+  dataset: Imagenet

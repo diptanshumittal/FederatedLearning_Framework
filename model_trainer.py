@@ -28,10 +28,16 @@ class PytorchModelTrainer:
         os.environ['CUDA_VISIBLE_DEVICES'] = config["cuda_device"]
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print("Device being used for training :", self.device, flush=True)
-        self.train_loader = DataLoader(self.helper.read_data(data_path=config["data_path"]),
-                                       batch_size=int(config['batch_size']), shuffle=True)
-        self.test_loader = DataLoader(self.helper.read_data(data_path=config["data_path"], trainset=False),
-                                      batch_size=int(config['batch_size']), shuffle=True)
+        if config["dataset"] == "Imagenet":
+            self.train_loader = DataLoader(self.helper.read_data_imagenet(data_path=config["data_path"]),
+                                           batch_size=int(config['batch_size']), shuffle=True)
+            self.test_loader = DataLoader(self.helper.read_data_imagenet(data_path=config["data_path"], trainset=False),
+                                          batch_size=int(config['batch_size']), shuffle=True)
+        else:
+            self.train_loader = DataLoader(self.helper.read_data(data_path=config["data_path"]),
+                                           batch_size=int(config['batch_size']), shuffle=True)
+            self.test_loader = DataLoader(self.helper.read_data(data_path=config["data_path"], trainset=False),
+                                          batch_size=int(config['batch_size']), shuffle=True)
         for x, y in self.test_loader:
             print(type(x))
             print(type(y))
