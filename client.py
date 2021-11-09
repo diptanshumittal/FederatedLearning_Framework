@@ -5,7 +5,7 @@ from minio import Minio
 import torch
 import requests as r
 from client.client_rest_service import ClientRestService
-from model.model_trainer import PytorchModelTrainer
+from model_trainer import PytorchModelTrainer
 
 
 class Server:
@@ -127,6 +127,7 @@ class Client:
 
 if __name__ == "__main__":
     if not torch.cuda.is_available():
+        print("Cuda not available!!")
         exit()
     try:
         client = Client()

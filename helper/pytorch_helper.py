@@ -52,6 +52,23 @@ class PytorchHelper():
         dataset = TensorDataset(tensor_x, tensor_y)
         return dataset
 
+    def read_data_imagenet(self, data_path, trainset=True):
+        pack = np.load(data_path)
+        if trainset:
+            X = pack['x_train']
+            y = pack['y_train']
+        else:
+            X = pack['x_test']
+            y = pack['y_test']
+        X = X.astype('float32')
+        y = y.astype('int64')
+        X = X.reshape(X.shape[0], 3, 64, 64)
+        X /= 255
+        tensor_x = torch.Tensor(X)
+        tensor_y = torch.from_numpy(y)
+        dataset = TensorDataset(tensor_x, tensor_y)
+        return dataset
+
     # def load_model_from_BytesIO(self, model_bytesio):
     #     """ Load a model from a BytesIO object. """
     #     path = self.get_tmp_path()
