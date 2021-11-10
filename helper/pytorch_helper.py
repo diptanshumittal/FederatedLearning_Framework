@@ -61,7 +61,7 @@ class PytorchHelper():
             X = pack['x_test']
             y = pack['y_test']
         X = X.astype('float32')
-        y = y.astype('int64')
+        y = y.astype('int64') - 1
         X = X.reshape(X.shape[0], 3, 64, 64)
         X /= 255
         tensor_x = torch.Tensor(X)

@@ -1,7 +1,7 @@
 services:
-  client1:
+  client5:
     command: sh -c "pip install -r requirements.txt && python client.py"
-    container_name: client1
+    container_name: client5
     deploy:
       resources:
         reservations:
@@ -9,11 +9,11 @@ services:
           - capabilities:
             - gpu
             device_ids:
-            - '0'
+            - MIG-GPU-6ff250df-07f5-cf8e-bfdb-d56c3c464126/2/0
             driver: nvidia
     image: pytorch/pytorch:1.9.0-cuda11.1-cudnn8-runtime
     ports:
-    - "8091:8091"
+    - 8095:8095
     volumes:
     - ${PWD}:/app
     working_dir: /app/

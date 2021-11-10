@@ -10,11 +10,11 @@ def run_container(cmd):
     subprocess.call(cmd, shell=True)
 
 
-threading.Thread(target=run_container, args=("docker-compose -f minio.yaml up >> miniologs.txt",), daemon=True).start()
+threading.Thread(target=run_container, args=("docker-compose -f docker/minio.yaml up >> miniologs.txt",), daemon=True).start()
 time.sleep(5)
-threading.Thread(target=run_container, args=("docker-compose -f reducer.yaml up >> data/reducer/log.txt",),
+threading.Thread(target=run_container, args=("docker-compose -f docker/reducer.yaml up >> data/reducer/log.txt",),
                  daemon=True).start()
-time.sleep(5)
+time.sleep(50)
 
 try:
     for i in range(1, 6):
@@ -30,13 +30,13 @@ try:
         with open("settings/settings-client.yaml", 'r') as file:
             config = dict(yaml.safe_load(file))
         config["client"]["port"] = 8090 + i
-        config["training"]["data_path"] = "data/clients/" + str(i) + "/mnist.npz"
+        config["training"]["data_path"] = "data/clients/" + str(i) + "/imagenet.npz"
         config["training"]["global_model_path"] = "data/clients/" + str(i) + "/weights.npz"
         with open('settings/settings-client.yaml', 'w') as f:
             yaml.dump(config, f)
         threading.Thread(target=run_container,
-                         args=("docker-compose -f client-gpu.yaml up >> data/clients/" + str(i) + "/log.txt",),
+                         args=("docker-compose -f docker/client-gpu.yaml up >> data/clients/" + str(i) + "/log.txt",),
                          daemon=True).start()
-        time.sleep(20)
+        time.sleep(50)
 except Exception as e:
     print(e)

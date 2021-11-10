@@ -146,6 +146,7 @@ class ReducerRestService:
                 plt.ylabel("Accuracy")
                 plt.title("Rounds vs Accuracy for client : " + key)
                 plt.savefig(key + '.png')
+                plt.clf()
             ret = {
                 'status': "Created"
             }

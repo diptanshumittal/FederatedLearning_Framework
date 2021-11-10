@@ -1,6 +1,6 @@
 client:
   hostname: 192.168.3.19
-  port: 8091
+  port: 8095
 reducer:
   hostname: 192.168.3.19
   port: 8090
@@ -13,8 +13,8 @@ storage:
     storage_secure_mode: false
   storage_type: S3
 training:
-  batch_size: 32
-  cuda_device: '0'
-  data_path: data/clients/1/mnist.npz
-  global_model_path: data/clients/1/weights.npz
+  batch_size: 500
+  cuda_device: MIG-GPU-6ff250df-07f5-cf8e-bfdb-d56c3c464126/2/0
+  data_path: data/clients/5/imagenet.npz
   dataset: Imagenet
+  global_model_path: data/clients/5/weights.npz

@@ -4,6 +4,7 @@ import torch
 from helper.pytorch_helper import PytorchHelper
 from torch.utils.data import DataLoader
 import os
+import time
 
 
 def weights_to_np(weights):
@@ -38,11 +39,7 @@ class PytorchModelTrainer:
                                            batch_size=int(config['batch_size']), shuffle=True)
             self.test_loader = DataLoader(self.helper.read_data(data_path=config["data_path"], trainset=False),
                                           batch_size=int(config['batch_size']), shuffle=True)
-        for x, y in self.test_loader:
-            print(type(x))
-            print(type(y))
-            print(x.shape)
-            print(y.shape)
+        print(len(self.train_loader))
 
     def evaluate(self, dataloader):
         self.model.eval()
@@ -81,14 +78,24 @@ class PytorchModelTrainer:
         print("-- RUNNING TRAINING --", flush=True)
         self.model.train()
         for i in range(settings['epochs']):
+            # print("Epoch :",i)
+            # pre = time.time()
             for x, y in self.train_loader:
-                x, y = x.to(self.device), y.to(self.device)
-                self.optimizer.zero_grad()
-                output = self.model(x)
-                print(output.shape)
-                error = self.loss(output, y)
-                error.backward()
-                self.optimizer.step()
+                try:
+                    x, y = x.to(self.device), y.to(self.device)
+                    # print("Loaded Data on GPU", flush=True)
+                    self.optimizer.zero_grad()
+                    output = self.model(x)
+                    # print("output generated", flush=True)
+                    error = self.loss(output, y)
+                    # print("Loss calculated", flush=True)
+                    error.backward()
+                    self.optimizer.step()
+                    # print(time.time()-pre, flush=True)
+                    # pre = time.time()
+                except Exception as e:
+                    print(e, flush=True)
+                    exit()
         print("-- TRAINING COMPLETED --", flush=True)
 
     def start_round(self, round_config):

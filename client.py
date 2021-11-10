@@ -25,11 +25,15 @@ class Server:
 
     def connect_with_server(self, client_config):
         try:
-            retval = r.get("{}?name={}&port={}".format(self.connect_string + '/addclient',
-                                                       client_config["hostname"], client_config["port"]))
-            if retval.json()['status'] == "added":
-                self.connected = True
-                return True
+            print("Trying to connect with the reducer")
+            for i in range(5):
+                retval = r.get("{}?name={}&port={}".format(self.connect_string + '/addclient',
+                                                        client_config["hostname"], client_config["port"]))
+                if retval.json()['status'] == "added":
+                    self.connected = True
+                    print("Connected with the reducer!!")
+                    return True
+                time.sleep(2)
             return False
         except Exception as e:
             self.connected = False
