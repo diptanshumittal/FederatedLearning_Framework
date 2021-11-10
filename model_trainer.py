@@ -10,7 +10,7 @@ import time
 def weights_to_np(weights):
     weights_np = collections.OrderedDict()
     for w in weights:
-        weights_np[w] = weights[w].cpu().detach().numpy()
+        weights_np[w] = weights[w].cpu().detach().numpy().tolist()
     return weights_np
 
 

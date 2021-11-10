@@ -69,23 +69,23 @@ class PytorchHelper():
         dataset = TensorDataset(tensor_x, tensor_y)
         return dataset
 
-    # def load_model_from_BytesIO(self, model_bytesio):
-    #     """ Load a model from a BytesIO object. """
-    #     path = self.get_tmp_path()
-    #     with open(path, 'wb') as fh:
-    #         fh.write(model_bytesio)
-    #         fh.flush()
-    #     model = self.load_model(path)
-    #     os.unlink(path)
-    #     return model
-    #
-    # def serialize_model_to_BytesIO(self, model):
-    #     outfile_name = self.save_model(model)
-    #
-    #     from io import BytesIO
-    #     a = BytesIO()
-    #     a.seek(0, 0)
-    #     with open(outfile_name, 'rb') as f:
-    #         a.write(f.read())
-    #     os.unlink(outfile_name)
-    #     return a
+    def load_model_from_BytesIO(self, model_bytesio):
+        """ Load a model from a BytesIO object. """
+        path = self.get_tmp_path()
+        with open(path, 'wb') as fh:
+            fh.write(model_bytesio)
+            fh.flush()
+        model = self.load_model(path)
+        os.unlink(path)
+        return model
+
+    def serialize_model_to_BytesIO(self, model):
+        outfile_name = self.save_model(model)
+
+        from io import BytesIO
+        a = BytesIO()
+        a.seek(0, 0)
+        with open(outfile_name, 'rb') as f:
+            a.write(f.read())
+        os.unlink(outfile_name)
+        return a

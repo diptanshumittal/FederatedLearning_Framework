@@ -13,6 +13,10 @@ statestore:
 flask:
   port: 8090
 
+tensorboard:
+  port: 6090
+  path: data/runs
+
 storage:
   storage_type: S3
   storage_config:
@@ -21,3 +25,4 @@ storage:
     storage_access_key: fedn_admin
     storage_secret_key: password
     storage_secure_mode: False
+

@@ -1,11 +1,18 @@
 import yaml
 import os
+import threading
 from minio import Minio
-
+import subprocess
 from helper.pytorch_helper import PytorchHelper
 from model.mnist_pytorch_model import create_seed_model
 from model_trainer import weights_to_np
 from reducer.reducer_rest_service import ReducerRestService
+
+
+def run_tensorboard(config):
+    subprocess.call("fuser -k " + str(config["port"]) + "/tcp", shell=True)
+    cmd = "tensorboard --host 0.0.0.0 --logdir=" + config["path"] + " --port " + str(config["port"])
+    subprocess.call(cmd, shell=True)
 
 
 class Reducer:
@@ -18,6 +25,10 @@ class Reducer:
                 print('Failed to read config from settings file, exiting.', flush=True)
                 raise e
         self.buckets = ["fedn-context"]
+        if not os.path.exists(fedn_config["tensorboard"]["path"]):
+            os.mkdir(fedn_config["tensorboard"]["path"])
+        threading.Thread(target=run_tensorboard, args=(fedn_config["tensorboard"],),
+                         daemon=True).start()
         try:
             storage_config = fedn_config["storage"]
             assert (storage_config["storage_type"] == "S3")
@@ -29,7 +40,6 @@ class Reducer:
             for bucket in self.buckets:
                 if not self.minio_client.bucket_exists(bucket):
                     self.minio_client.make_bucket(bucket)
-            print(self.minio_client.bucket_exists(self.buckets[0]))
             if not os.path.exists('data/reducer'):
                 os.mkdir('data/reducer')
             self.global_model = "initial_model.npz"
@@ -45,7 +55,8 @@ class Reducer:
 
         config = {
             "flask_port": fedn_config["flask"]["port"],
-            "global_model": self.global_model
+            "global_model": self.global_model,
+            "tensorboard_path": fedn_config["tensorboard"]["path"]
         }
         self.rest = ReducerRestService(self.minio_client, config)
 

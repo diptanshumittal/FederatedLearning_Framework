@@ -2,6 +2,7 @@ import uuid
 import threading
 from flask import Flask, jsonify, request
 import json
+import time
 
 
 class ClientRestService:
@@ -41,10 +42,12 @@ class ClientRestService:
         app.run(host="0.0.0.0", port=self.port)
 
     def run_round(self, config):
+        pre = time.time()
         print("Running round - ", config["round_id"], flush=True)
         self.minio_client.fget_object('fedn-context', config["global_model"], self.global_model_path)
         report = self.model_trainer.start_round({"epochs": config["epochs"]})
         print(report)
         self.minio_client.fput_object(config["bucket_name"], str(uuid.uuid4()) + ".npz", self.global_model_path)
+        report["round_time"] = time.time() - pre
         self.server.send_round_complete_request(config["round_id"], json.dumps(report))
         print("Round ended successfully and notification sent to server", flush=True)

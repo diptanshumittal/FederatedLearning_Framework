@@ -8,9 +8,8 @@ def create_seed_model():
     model = resnet18()
     loss = nn.NLLLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, eps=1e-07)
-    #Loss Function
+    # Loss Function
     loss = nn.CrossEntropyLoss()
-    # Observe that all parameters are being optimized
     optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     return model, loss, optimizer
 
@@ -104,8 +103,6 @@ class Net1(nn.Module):
         # x = self.fc2(x)
         output = F.log_softmax(x, dim=1)
         return output
-
-
 
 
 def conv3x3(in_planes, out_planes, stride=1, groups=1, dilation=1):

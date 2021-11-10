@@ -9,6 +9,7 @@ import os
 from helper.pytorch_helper import PytorchHelper
 from functools import wraps
 import json
+from torch.utils.tensorboard import SummaryWriter
 
 
 class Client:
@@ -42,6 +43,7 @@ class ReducerRestService:
         self.rounds = 0
         self.global_model = config["global_model"]
         self.clients_updated = 0
+        self.tensorboard_path = config["tensorboard_path"]
         threading.Thread(target=self.remove_disconnected_clients, daemon=True).start()
 
     def remove_disconnected_clients(self):
@@ -99,16 +101,30 @@ class ReducerRestService:
 
         @app.route('/roundcompletedbyclient')
         def round_completed_by_client():
-            if self.rounds == int(request.args.get('round_id', None)):
+            round_id = int(request.args.get('round_id', None))
+            if self.rounds == round_id:
                 id = request.args.get("client_id", None)
                 if id in self.clients:
+                    if not os.path.exists(self.tensorboard_path+"/"+id):
+                        os.mkdir(self.tensorboard_path+"/"+id)
+                    writer = SummaryWriter(self.tensorboard_path+"/"+id)
                     res = json.loads(request.args.get("report", None))
                     if res is None:
                         res["training_accuracy"] = 0
                         res["test_accuracy"] = 0
+                        res["training_loss"] = 0
+                        res["test_loss"] = 0
+                        res["round_time"] = 0
                     else:
                         res["training_accuracy"] = float(res["training_accuracy"])
                         res["test_accuracy"] = float(res["test_accuracy"])
+
+                    writer.add_scalar('training_loss', res["training_loss"], round_id)
+                    writer.add_scalar('test_loss', res["test_loss"], round_id)
+                    writer.add_scalar('training_accuracy', res["training_accuracy"], round_id)
+                    writer.add_scalar('test_accuracy', res["test_accuracy"], round_id)
+                    writer.add_scalar('round_time', res["round_time"], round_id)
+                    writer.close()
                     self.clients[id].training_acc.append(res["training_accuracy"])
                     self.clients[id].testing_acc.append(res["test_accuracy"])
                 self.clients_updated -= 1
