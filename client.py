@@ -6,7 +6,7 @@ import torch
 import requests as r
 from client.client_rest_service import ClientRestService
 from model_trainer import PytorchModelTrainer
-
+import sys
 
 class Server:
     def __init__(self, name, port, id):
@@ -54,9 +54,9 @@ class Server:
 
 
 class Client:
-    def __init__(self):
+    def __init__(self, settings_path):
         """ """
-        with open("settings/settings-client.yaml", 'r') as file:
+        with open(settings_path, 'r') as file:
             try:
                 fedn_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
@@ -133,8 +133,9 @@ if __name__ == "__main__":
     if not torch.cuda.is_available():
         print("Cuda not available!!")
         exit()
+    print(torch.__version__, flush=True)
     try:
-        client = Client()
+        client = Client(sys.argv[1])
         client.run()
     except Exception as e:
         print(e, flush=True)

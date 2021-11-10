@@ -1,0 +1,130 @@
+Attaching to minio
+[36mminio    |[0m 
+[36mminio    |[0m  You are running an older version of MinIO released 3 weeks ago 
+[36mminio    |[0m  Update: Run `mc admin update` 
+[36mminio    |[0m 
+[36mminio    |[0m 
+[36mminio    |[0m API: http://172.19.0.2:9000  http://127.0.0.1:9000 
+[36mminio    |[0m 
+[36mminio    |[0m Console: http://minio:9001 
+[36mminio    |[0m 
+[36mminio    |[0m Documentation: https://docs.min.io
+Gracefully stopping... (press Ctrl+C again to force)
+Attaching to minio
+[36mminio    |[0m 
+[36mminio    |[0m  You are running an older version of MinIO released 3 weeks ago 
+[36mminio    |[0m  Update: Run `mc admin update` 
+[36mminio    |[0m 
+[36mminio    |[0m 
+[36mminio    |[0m API: http://172.19.0.2:9000  http://127.0.0.1:9000 
+[36mminio    |[0m 
+[36mminio    |[0m Console: http://minio:9001 
+[36mminio    |[0m 
+[36mminio    |[0m Documentation: https://docs.min.io
+Gracefully stopping... (press Ctrl+C again to force)
+Attaching to minio
+[36mminio    |[0m 
+[36mminio    |[0m  You are running an older version of MinIO released 3 weeks ago 
+[36mminio    |[0m  Update: Run `mc admin update` 
+[36mminio    |[0m 
+[36mminio    |[0m 
+[36mminio    |[0m API: http://172.19.0.2:9000  http://127.0.0.1:9000 
+[36mminio    |[0m 
+[36mminio    |[0m Console: http://minio:9001 
+[36mminio    |[0m 
+[36mminio    |[0m Documentation: https://docs.min.io
+[36mminio exited with code 137
+[0mAttaching to minio
+[36mminio    |[0m 
+[36mminio    |[0m  You are running an older version of MinIO released 3 weeks ago 
+[36mminio    |[0m  Update: Run `mc admin update` 
+[36mminio    |[0m 
+[36mminio    |[0m 
+[36mminio    |[0m API: http://172.19.0.2:9000  http://127.0.0.1:9000 
+[36mminio    |[0m 
+[36mminio    |[0m Console: http://minio:9001 
+[36mminio    |[0m 
+[36mminio    |[0m Documentation: https://docs.min.io
+[36mminio exited with code 137
+[0mAttaching to minio
+[36mminio    |[0m 
+[36mminio    |[0m  You are running an older version of MinIO released 3 weeks ago 
+[36mminio    |[0m  Update: Run `mc admin update` 
+[36mminio    |[0m 
+[36mminio    |[0m 
+[36mminio    |[0m API: http://172.19.0.2:9000  http://127.0.0.1:9000 
+[36mminio    |[0m 
+[36mminio    |[0m Console: http://minio:9001 
+[36mminio    |[0m 
+[36mminio    |[0m Documentation: https://docs.min.io
+[36mminio exited with code 137
+[0mAttaching to minio
+[36mminio    |[0m 
+[36mminio    |[0m  You are running an older version of MinIO released 3 weeks ago 
+[36mminio    |[0m  Update: Run `mc admin update` 
+[36mminio    |[0m 
+[36mminio    |[0m 
+[36mminio    |[0m API: http://172.19.0.2:9000  http://127.0.0.1:9000 
+[36mminio    |[0m 
+[36mminio    |[0m Console: http://minio:9001 
+[36mminio    |[0m 
+[36mminio    |[0m Documentation: https://docs.min.io
+[36mminio exited with code 137
+[0mAttaching to minio
+[36mminio    |[0m 
+[36mminio    |[0m  You are running an older version of MinIO released 3 weeks ago 
+[36mminio    |[0m  Update: Run `mc admin update` 
+[36mminio    |[0m 
+[36mminio    |[0m 
+[36mminio    |[0m API: http://172.19.0.2:9000  http://127.0.0.1:9000 
+[36mminio    |[0m 
+[36mminio    |[0m Console: http://minio:9001 
+[36mminio    |[0m 
+[36mminio    |[0m Documentation: https://docs.min.io
+Gracefully stopping... (press Ctrl+C again to force)
+Attaching to minio
+[36mminio    |[0m 
+[36mminio    |[0m  You are running an older version of MinIO released 3 weeks ago 
+[36mminio    |[0m  Update: Run `mc admin update` 
+[36mminio    |[0m 
+[36mminio    |[0m 
+[36mminio    |[0m API: http://172.19.0.2:9000  http://127.0.0.1:9000 
+[36mminio    |[0m 
+[36mminio    |[0m Console: http://minio:9001 
+[36mminio    |[0m 
+[36mminio    |[0m Documentation: https://docs.min.io
+[36mminio exited with code 137
+[0mAttaching to minio
+[36mminio    |[0m 
+[36mminio    |[0m  You are running an older version of MinIO released 3 weeks ago 
+[36mminio    |[0m  Update: Run `mc admin update` 
+[36mminio    |[0m 
+[36mminio    |[0m 
+[36mminio    |[0m API: http://172.19.0.2:9000  http://127.0.0.1:9000 
+[36mminio    |[0m 
+[36mminio    |[0m Console: http://minio:9001 
+[36mminio    |[0m 
+[36mminio    |[0m Documentation: https://docs.min.io
+[36mminio exited with code 137
+[0mAttaching to minio
+[36mminio    |[0m 
+[36mminio    |[0m  You are running an older version of MinIO released 3 weeks ago 
+[36mminio    |[0m  Update: Run `mc admin update` 
+[36mminio    |[0m 
+[36mminio    |[0m 
+[36mminio    |[0m API: http://172.19.0.2:9000  http://127.0.0.1:9000 
+[36mminio    |[0m 
+[36mminio    |[0m Console: http://minio:9001 
+[36mminio    |[0m 
+[36mminio    |[0m Documentation: https://docs.min.io
+Attaching to minio
+[36mminio    |[0m 
+[36mminio    |[0m  You are running an older version of MinIO released 3 weeks ago 
+[36mminio    |[0m  Update: Run `mc admin update` 
+[36mminio    |[0m 
+[36mminio    |[0m 
+[36mminio    |[0m API: http://172.19.0.2:9000  http://127.0.0.1:9000 
+[36mminio    |[0m 
+[36mminio    |[0m Console: http://minio:9001 
+[36mminio    |[0m 
+[36mminio    |[0m Documentation: https://docs.min.io

@@ -1,7 +1,7 @@
 services:
-  client5:
-    command: sh -c "pip install -r requirements.txt && python client.py"
-    container_name: client5
+  client1:
+    command: sh -c 'pip install -r requirements.txt && python client.py data/clients/1/settings-client.yaml'
+    container_name: client1
     deploy:
       resources:
         reservations:
@@ -13,7 +13,7 @@ services:
             driver: nvidia
     image: pytorch/pytorch:1.9.0-cuda11.1-cudnn8-runtime
     ports:
-    - 8095:8095
+    - 8091:8091
     volumes:
     - ${PWD}:/app
     working_dir: /app/
