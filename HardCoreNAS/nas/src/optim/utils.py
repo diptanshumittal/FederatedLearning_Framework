@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from HardCoreNAS.external import DistributedManager
+from HardCoreNAS.external.distributed_manager import DistributedManager
 
 EPSILON = 1e-6
 

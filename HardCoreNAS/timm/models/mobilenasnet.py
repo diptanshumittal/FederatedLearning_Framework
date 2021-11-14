@@ -7,12 +7,12 @@ import re
 import time
 from copy import deepcopy
 from functools import partial
-
+from torch import nn
 import numpy as np
-
-from HardCoreNAS.external import DistributedManager
-from HardCoreNAS.external import extract_layer, extract_conv_layers, set_layer, measure_cpu_time
-from HardCoreNAS.external import measure_time as measure_gpu_time
+import torch
+from HardCoreNAS.external.distributed_manager import DistributedManager
+from HardCoreNAS.external.utils_pruning import extract_layer, extract_conv_layers, set_layer, measure_cpu_time
+from HardCoreNAS.external.utils_pruning import measure_time as measure_gpu_time
 from HardCoreNAS.timm.data import resolve_data_config, create_loader
 from .efficientnet_blocks import resolve_act_layer, InvertedResidual, make_divisible, resolve_se_args, SqueezeExcite
 from .efficientnet_builder import decode_arch_def, resolve_bn_args

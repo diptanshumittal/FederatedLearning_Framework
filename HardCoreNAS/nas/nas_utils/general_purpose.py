@@ -4,10 +4,10 @@ import logging
 import re
 import time
 from contextlib import suppress
-
+from torch import nn
 import numpy as np
 
-from HardCoreNAS.external import DistributedManager, master_only
+from HardCoreNAS.external.distributed_manager import DistributedManager, master_only
 from HardCoreNAS.timm.models.efficientnet_blocks import InvertedResidual
 from HardCoreNAS.timm.models.layers import hard_sigmoid
 from HardCoreNAS.timm.models.mobilenasnet import InvertedResidualElastic, MobileNasNet, SinkPoint, \
