@@ -1,6 +1,6 @@
 from torch import nn
 import torch
-from timm import create_model , create_optimizer
+from HardCoreNAS.timm import create_model , create_optimizer
 import torch.nn.functional as F
 import argparse
 
