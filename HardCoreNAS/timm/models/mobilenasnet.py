@@ -19,7 +19,9 @@ from .efficientnet_builder import decode_arch_def, resolve_bn_args
 from .layers import create_conv2d, drop_path
 from .layers import hard_sigmoid
 from .layers.activations import sigmoid
+from .layers.activations_me import HardSwishMe
 from .mobilenetv3 import MobileNetV3
+import torch.nn.functional as F
 
 try:
     from apex import amp

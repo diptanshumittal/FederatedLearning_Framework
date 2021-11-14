@@ -80,21 +80,21 @@ class NasTrainer:
         for i in range(settings['epochs']):
             # train_metrics, step_counter = train_epoch(i, model, self.train_loader, self.test_loader, self.optimizer, self.loss)
             for x, y in self.train_loader:
-                try:
-                    x, y = x.to(self.device), y.to(self.device)
-                    # print("Loaded Data on GPU", flush=True)
-                    output = self.model(x)
-                    self.optimizer.zero_grad()
-                    # print("output generated", flush=True)
-                    error = self.loss(output, y)
-                    # print("Loss calculated", flush=True)
-                    error.backward()
-                    self.optimizer.step()
-                    # print(time.time()-pre, flush=True)
-                    # pre = time.time()
-                except Exception as e:
-                    print(e, flush=True)
-                    exit()
+                # try:
+                x, y = x.to(self.device), y.to(self.device)
+                # print("Loaded Data on GPU", flush=True)
+                output = self.model(x)
+                self.optimizer.zero_grad()
+                # print("output generated", flush=True)
+                error = self.loss(output, y)
+                # print("Loss calculated", flush=True)
+                error.backward()
+                self.optimizer.step()
+                # print(time.time()-pre, flush=True)
+                # pre = time.time()
+                # except Exception as e:
+                #     print(e, flush=True)
+                #     exit()
         print("-- TRAINING COMPLETED --", flush=True)
 
     def start_round(self, round_config):
