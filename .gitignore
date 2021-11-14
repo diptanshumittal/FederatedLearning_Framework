@@ -11,3 +11,14 @@
 /weights
 /data/reducer
 /data/runs
+/HardCoreNAS/__pycache__
+/HardCoreNAS/external/__pycache__
+/HardCoreNAS/nas/__pycache__
+/HardCoreNAS/timm/__pycache__
+/HardCoreNAS/timm/models/__pycache__
+/HardCoreNAS/timm/models/layers/__pycache__
+/HardCoreNAS/timm/optim/__pycache__
+/HardCoreNAS/timm/data/__pycache__
+/HardCoreNAS/nas/nas_utils/__pycache__
+/HardCoreNAS/nas/src/__pycache__
+/HardCoreNAS/nas/src/optim/__pycache__
