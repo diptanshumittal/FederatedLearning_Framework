@@ -52,6 +52,24 @@ class PytorchHelper():
         dataset = TensorDataset(tensor_x, tensor_y)
         return dataset
 
+    def read_data_mnist(self, data_path, trainset=True):
+        pack = np.load(data_path)
+        if trainset:
+            X = pack['x_train']
+            y = pack['y_train']
+        else:
+            X = pack['x_test']
+            y = pack['y_test']
+        X = X.astype('float32')
+        y = y.astype('int64')
+        X = np.repeat(X , 3 , axis=2).reshape(len(X) , 3,28,28)
+        X /= 255
+        # print(X.shape , y.shape)
+        tensor_x = torch.Tensor(X)
+        tensor_y = torch.from_numpy(y)
+        dataset = TensorDataset(tensor_x, tensor_y)
+        return dataset
+
     def read_data_imagenet(self, data_path, trainset=True):
         pack = np.load(data_path)
         if trainset:
