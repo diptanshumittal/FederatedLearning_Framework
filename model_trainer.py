@@ -1,5 +1,5 @@
 import collections
-from model.mnist_pytorch_model import create_seed_model , create_NASglobal_model
+from model.mnist_pytorch_model import create_seed_model, create_NASglobal_model
 import torch
 from helper.pytorch_helper import PytorchHelper
 from torch.utils.data import DataLoader
@@ -20,14 +20,15 @@ def np_to_weights(weights_np):
         weights[w] = torch.tensor(weights_np[w])
     return weights
 
-class NAS_trainer:
-    def __init__(self, config) :
+
+class NasTrainer:
+    def __init__(self, config):
         self.helper = PytorchHelper()
         self.global_model_path = config["global_model_path"]
         self.model, self.loss, self.optimizer = create_NASglobal_model()
         os.environ['CUDA_VISIBLE_DEVICES'] = config["cuda_device"]
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        print("Device being used for training :", self.device, flush=True)
+        print("NAS Training \nDevice being used for training :", self.device, flush=True)
         if config["dataset"] == "Imagenet":
             self.train_loader = DataLoader(self.helper.read_data_imagenet(data_path=config["data_path"]),
                                            batch_size=int(config['batch_size']), shuffle=True)
@@ -104,6 +105,7 @@ class NAS_trainer:
         # self.model.cpu()
         # self.helper.save_model(weights_to_np(self.model.state_dict()), self.global_model_path)
         return report
+
 
 class PytorchModelTrainer:
     def __init__(self, config):
@@ -196,11 +198,11 @@ if __name__ == "__main__":
     setup_config = {
         "data_path": "data/mnist.npz",
         "global_model_path": "weights/initial_model.npz",
-        "dataset" : "MNIST",
+        "dataset": "MNIST",
         "batch_size": 4,
         "cuda_device": "0"
     }
-    modelTrainer = NAS_trainer(setup_config)
+    modelTrainer = NasTrainer(setup_config)
     settings = {
         "epochs": 1
     }

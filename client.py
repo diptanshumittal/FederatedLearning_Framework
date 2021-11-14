@@ -5,8 +5,9 @@ from minio import Minio
 import torch
 import requests as r
 from client.client_rest_service import ClientRestService
-from model_trainer import PytorchModelTrainer
+from model_trainer import PytorchModelTrainer, NasTrainer
 import sys
+
 
 class Server:
     def __init__(self, name, port, id):
@@ -28,7 +29,7 @@ class Server:
             print("Trying to connect with the reducer")
             for i in range(5):
                 retval = r.get("{}?name={}&port={}".format(self.connect_string + '/addclient',
-                                                        client_config["hostname"], client_config["port"]))
+                                                           client_config["hostname"], client_config["port"]))
                 if retval.json()['status'] == "added":
                     self.connected = True
                     print("Connected with the reducer!!")
@@ -80,7 +81,10 @@ class Client:
         print("Minio client connected successfully !!!")
 
         try:
-            self.model_trainer = PytorchModelTrainer(fedn_config["training"])
+            if fedn_config["training"]["trainer"] == "nas":
+                self.model_trainer = NasTrainer(fedn_config["training"])
+            else:
+                self.model_trainer = PytorchModelTrainer(fedn_config["training"])
         except Exception as e:
             print("Error in model trainer setup ", e)
             exit()
