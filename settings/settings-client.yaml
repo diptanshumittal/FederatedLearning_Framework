@@ -13,7 +13,7 @@ storage:
     storage_secure_mode: false
   storage_type: S3
 training:
-  batch_size: 32
+  batch_size: 50
   cuda_device: MIG-GPU-6ff250df-07f5-cf8e-bfdb-d56c3c464126/2/0
   data_path: data/clients/5/mnist.npz
   dataset: mnist

@@ -9,6 +9,7 @@ import os
 from helper.pytorch_helper import PytorchHelper
 from functools import wraps
 import json
+import logging
 from torch.utils.tensorboard import SummaryWriter
 
 
@@ -16,15 +17,20 @@ class Client:
     def __init__(self, name, port, rounds):
         self.name = name
         self.port = port
+        self.status = "Idle"
         self.connect_string = "http://{}:{}".format(self.name, self.port)
         self.last_checked = time.time()
         self.training_acc = [0] * rounds
         self.testing_acc = [0] * rounds
 
     def send_round_start_request(self, round_id, bucket_name, global_model, epochs):
-        r.get("{}?round_id={}&bucket_name={}&global_model={}&epochs={}".format(self.connect_string + '/startround',
+        retval = r.get("{}?round_id={}&bucket_name={}&global_model={}&epochs={}".format(self.connect_string + '/startround',
                                                                                round_id, bucket_name, global_model,
                                                                                epochs))
+        if retval.json()['status'] == "started":
+            return True
+        return False
+                                                                        
 
     def update_last_checked(self):
         self.last_checked = time.time()
@@ -50,10 +56,12 @@ class ReducerRestService:
         while True:
             self.clients = {client: self.clients[client] for client in self.clients if
                             self.clients[client].get_last_checked() < 15}
-            print("Remaining clients - ", self.clients, flush=True)
-            time.sleep(30)
+            print("Remaining clients - ", len(self.clients), flush=True)
+            time.sleep(60)
 
     def run(self):
+        log = logging.getLogger('werkzeug')
+        log.setLevel(logging.ERROR)
         app = Flask(__name__)
 
         def check_auth(f):
@@ -101,37 +109,44 @@ class ReducerRestService:
 
         @app.route('/roundcompletedbyclient')
         def round_completed_by_client():
-            round_id = int(request.args.get('round_id', None))
-            if self.rounds == round_id:
-                id = request.args.get("client_id", None)
-                if id in self.clients:
-                    if not os.path.exists(self.tensorboard_path+"/"+id):
-                        os.mkdir(self.tensorboard_path+"/"+id)
-                    writer = SummaryWriter(self.tensorboard_path+"/"+id)
-                    res = json.loads(request.args.get("report", None))
-                    if res is None:
-                        res["training_accuracy"] = 0
-                        res["test_accuracy"] = 0
-                        res["training_loss"] = 0
-                        res["test_loss"] = 0
-                        res["round_time"] = 0
-                    else:
-                        res["training_accuracy"] = float(res["training_accuracy"])
-                        res["test_accuracy"] = float(res["test_accuracy"])
-
-                    writer.add_scalar('training_loss', res["training_loss"], round_id)
-                    writer.add_scalar('test_loss', res["test_loss"], round_id)
-                    writer.add_scalar('training_accuracy', res["training_accuracy"], round_id)
-                    writer.add_scalar('test_accuracy', res["test_accuracy"], round_id)
-                    writer.add_scalar('round_time', res["round_time"], round_id)
-                    writer.close()
-                    self.clients[id].training_acc.append(res["training_accuracy"])
-                    self.clients[id].testing_acc.append(res["test_accuracy"])
-                self.clients_updated -= 1
+            round_id = int(request.args.get('round_id', "-1"))
+            id = request.args.get("client_id", "0")
+            # print(request.args, flush=True)
+            # print([i for i in request.args.keys()], flush=True)
+            if self.rounds == round_id and id in self.clients:
+                if not os.path.exists(self.tensorboard_path+"/"+id):
+                    os.mkdir(self.tensorboard_path+"/"+id)
+                writer = SummaryWriter(self.tensorboard_path+"/"+id)
+                self.clients[id].status = "Idle"
+                res = request.args.get("report", None)
+                if res is None:
+                    res = {}
+                    res["training_accuracy"] = 0
+                    res["test_accuracy"] = 0
+                    res["training_loss"] = 0
+                    res["test_loss"] = 0
+                    res["round_time"] = 0
+                else:
+                    res = json.loads(res)
+                    # res["training_accuracy"] = float(res["training_accuracy"])
+                    # res["test_accuracy"] = float(res["test_accuracy"])
+                writer.add_scalar('training_loss', res["training_loss"], round_id)
+                writer.add_scalar('test_loss', res["test_loss"], round_id)
+                writer.add_scalar('training_accuracy', res["training_accuracy"], round_id)
+                writer.add_scalar('test_accuracy', res["test_accuracy"], round_id)
+                writer.add_scalar('round_time', res["round_time"], round_id)
+                writer.close()
+                # self.clients[id].training_acc.append(res["training_accuracy"])
+                # self.clients[id].testing_acc.append(res["test_accuracy"])
+                ret = {
+                    'status': "Success"
+                }
+                return jsonify(ret)
             ret = {
-                'status': "Details updated"
+                'status': "Failure"
             }
             return jsonify(ret)
+            
 
         @app.route('/clientcheck')
         def client_check():
@@ -182,11 +197,20 @@ class ReducerRestService:
 
             self.clients_updated = len(self.clients)
             for _, client in self.clients.items():
-                client.send_round_start_request(self.rounds, bucket_name, self.global_model, config["epochs"])
-
+                for i in range(3):
+                    if client.send_round_start_request(self.rounds, bucket_name, self.global_model, config["epochs"]):
+                        client.status = "Training"
+                        break
+                    else:
+                        time.sleep(5)
             round_time = 0
             while True:
-                if self.clients_updated < 1 or round_time > config["round_time"]:
+                client_training = 0
+                for _, client in self.clients.items():
+                    if client.status == "Training":
+                        client_training += 1
+                print("Clients in Training : "+str(client_training), flush=True)
+                if client_training == 0 or round_time > config["round_time"]:
                     break
                 round_time += 1
                 time.sleep(1)

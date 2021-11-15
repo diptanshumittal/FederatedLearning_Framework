@@ -10,7 +10,7 @@ def run_container(cmd):
 
 def start_clients():
     try:
-        for i in range(1, 2):
+        for i in range(1, 6):
             with open("docker/client-gpu.yaml", 'r') as file:
                 config1 = dict(yaml.safe_load(file))
             print(list(config1["services"].keys()))
@@ -25,7 +25,7 @@ def start_clients():
             with open("settings/settings-client.yaml", 'r') as file:
                 config = dict(yaml.safe_load(file))
             config["client"]["port"] = 8090 + i
-            config["training"]["data_path"] = "data/clients/" + str(i) + "/imagenet.npz"
+            config["training"]["data_path"] = "data/clients/" + str(i) + "/mnist.npz"
             config["training"]["global_model_path"] = "data/clients/" + str(i) + "/weights.npz"
             with open("data/clients/" + str(i) + "/settings-client.yaml", 'w') as f:
                 yaml.dump(config, f)

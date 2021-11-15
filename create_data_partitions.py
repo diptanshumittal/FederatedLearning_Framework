@@ -8,6 +8,9 @@ def splitset(dataset, parts):
     """Partition data into "parts" partitions"""
     n = dataset.shape[0]
     local_n = floor(n / parts)
+    print(dataset.shape)
+    arr = np.array(np.split(dataset, parts))
+    print(arr.shape)
     result = []
     for i in range(parts):
         result.append(dataset[i * local_n: (i + 1) * local_n])
@@ -33,6 +36,7 @@ if __name__ == '__main__':
     for i in range(nr_of_datasets):
         if not os.path.exists('data/clients/{}'.format(str(i+1))):
             os.mkdir('data/clients/{}'.format(str(i+1)))
+        print(data['x_train'][i].shape)
         np.savez('data/clients/{}'.format(str(i+1)) + '/mnist.npz',
                  x_train=data['x_train'][i],
                  y_train=data['y_train'][i],

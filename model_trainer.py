@@ -80,21 +80,21 @@ class NasTrainer:
         for i in range(settings['epochs']):
             # train_metrics, step_counter = train_epoch(i, model, self.train_loader, self.test_loader, self.optimizer, self.loss)
             for x, y in self.train_loader:
-                # try:
-                x, y = x.to(self.device), y.to(self.device)
-                # print("Loaded Data on GPU", flush=True)
-                output = self.model(x)
-                self.optimizer.zero_grad()
-                # print("output generated", flush=True)
-                error = self.loss(output, y)
-                # print("Loss calculated", flush=True)
-                error.backward()
-                self.optimizer.step()
-                # print(time.time()-pre, flush=True)
-                # pre = time.time()
-                # except Exception as e:
-                #     print(e, flush=True)
-                #     exit()
+                try:
+                    x, y = x.to(self.device), y.to(self.device)
+                    # print("Loaded Data on GPU", flush=True)
+                    output = self.model(x)
+                    self.optimizer.zero_grad()
+                    # print("output generated", flush=True)
+                    error = self.loss(output, y)
+                    # print("Loss calculated", flush=True)
+                    error.backward()
+                    self.optimizer.step()
+                    # print(time.time()-pre, flush=True)
+                    # pre = time.time()
+                except Exception as e:
+                    print(e, flush=True)
+                    exit()
         print("-- TRAINING COMPLETED --", flush=True)
 
     def start_round(self, round_config):
@@ -196,11 +196,11 @@ class PytorchModelTrainer:
 
 if __name__ == "__main__":
     setup_config = {
-        "data_path": "data/mnist.npz",
+        "data_path": "data/clients/5/mnist.npz",
         "global_model_path": "weights/initial_model.npz",
         "dataset": "MNIST",
-        "batch_size": 4,
-        "cuda_device": "0"
+        "batch_size": 500,
+        "cuda_device": "MIG-GPU-6ff250df-07f5-cf8e-bfdb-d56c3c464126/2/0"
     }
     modelTrainer = NasTrainer(setup_config)
     settings = {

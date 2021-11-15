@@ -3,7 +3,7 @@ import threading
 from flask import Flask, jsonify, request
 import json
 import time
-
+import logging
 
 class ClientRestService:
 
@@ -16,6 +16,8 @@ class ClientRestService:
         self.global_model_path = config["global_model_path"]
 
     def run(self):
+        log = logging.getLogger('werkzeug')
+        log.setLevel(logging.ERROR)
         app = Flask(__name__)
 
         @app.route('/')
@@ -42,12 +44,22 @@ class ClientRestService:
         app.run(host="0.0.0.0", port=self.port)
 
     def run_round(self, config):
-        pre = time.time()
-        print("Running round - ", config["round_id"], flush=True)
-        self.minio_client.fget_object('fedn-context', config["global_model"], self.global_model_path)
-        report = self.model_trainer.start_round({"epochs": config["epochs"]})
-        print(report)
-        self.minio_client.fput_object(config["bucket_name"], str(uuid.uuid4()) + ".npz", self.global_model_path)
-        report["round_time"] = time.time() - pre
-        self.server.send_round_complete_request(config["round_id"], json.dumps(report))
-        print("Round ended successfully and notification sent to server", flush=True)
+        try:
+            pre = time.time()
+            print("Running round - ", config["round_id"], flush=True)
+            self.minio_client.fget_object('fedn-context', config["global_model"], self.global_model_path)
+            report = self.model_trainer.start_round({"epochs": config["epochs"]})
+            self.minio_client.fput_object(config["bucket_name"], str(uuid.uuid4()) + ".npz", self.global_model_path)
+            report["round_time"] = time.time() - pre
+            print("Report : ",report, flush=True)
+            res = False
+            for i in range(10):
+                res = self.server.send_round_complete_request(config["round_id"], json.dumps(report))
+                if res:
+                    break
+                time.sleep(3)
+            if res == False:
+                print("Notification not sent to reducer successfully!!!")
+        except Exception as e:
+            print("Error during round :", e)
+

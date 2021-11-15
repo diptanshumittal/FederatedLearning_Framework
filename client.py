@@ -19,8 +19,12 @@ class Server:
 
     def send_round_complete_request(self, round_id, report):
         try:
-            r.get("{}?round_id={}&client_id={}&report={}".format(self.connect_string + '/roundcompletedbyclient',
+            retval = r.get("{}?round_id={}&client_id={}&report={}".format(self.connect_string + '/roundcompletedbyclient',
                                                                  round_id, self.id, report))
+            if retval.json()['status'] == "Success":
+                print("Round ended successfully and notification sent to server",flush=True)
+                return True
+            return False
         except Exception as e:
             return False
 

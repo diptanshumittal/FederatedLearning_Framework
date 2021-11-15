@@ -10,3 +10,5 @@ tqdm
 pandas
 Pillow
 torchvision
+python-mnist
+tensorboard

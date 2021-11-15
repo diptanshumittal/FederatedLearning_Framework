@@ -62,6 +62,7 @@ class PytorchHelper():
             y = pack['y_test']
         X = X.astype('float32')
         y = y.astype('int64')
+        print(X.shape)
         X = np.repeat(X , 3 , axis=2).reshape(len(X) , 3,28,28)
         X /= 255
         # print(X.shape , y.shape)
