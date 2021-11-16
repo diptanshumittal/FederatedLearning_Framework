@@ -1,13 +1,14 @@
 from torch import nn
 import torch
-from HardCoreNAS.timm import create_model , create_optimizer
+from HardCoreNAS.timm import create_model, create_optimizer
 import torch.nn.functional as F
 import argparse
 
 
 # Create an initial CNN Model
-def create_seed_model():
-    model = resnet18()
+def create_seed_model(config):
+    print(config)
+    model = Net()
     loss = nn.NLLLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001, eps=1e-07)
     # Loss Function
@@ -16,29 +17,29 @@ def create_seed_model():
     return model, loss, optimizer
 
 
-def create_NASglobal_model(num_classes = 10) :
-    model_name='mobilenasnet'
+def create_NASglobal_model(num_classes=10):
+    model_name = 'mobilenasnet'
 
     model = create_model(
-    model_name=model_name,
-    num_classes=num_classes,
-    drop_rate=0.3,
-    drop_connect_rate=None,
-    drop_path_rate=None,
-    drop_block_rate=None,
-    global_pool='avg',                                                                              # possible options "avg", "max", "avgmax", "avgmaxc"
-    bn_tf=False,                                                                                    # Use Tensorflow BatchNorm defaults for models that support it (mobile and efficient net support it)
-    bn_momentum=None,
-    bn_eps=None,
-    checkpoint_path='', # args.initial_checkpoint if not args.train_elastic_model else args.initial_checkpoint_IKD,
-    strict=False,
-    resnet_structure=[3, 4, 6, 3],
-    resnet_block='Bottleneck',
-    use_kernel_3=True)
+        model_name=model_name,
+        num_classes=num_classes,
+        drop_rate=0.3,
+        drop_connect_rate=None,
+        drop_path_rate=None,
+        drop_block_rate=None,
+        global_pool='avg',  # possible options "avg", "max", "avgmax", "avgmaxc"
+        bn_tf=False,
+        # Use Tensorflow BatchNorm defaults for models that support it (mobile and efficient net support it)
+        bn_momentum=None,
+        bn_eps=None,
+        checkpoint_path='',  # args.initial_checkpoint if not args.train_elastic_model else args.initial_checkpoint_IKD,
+        strict=False,
+        resnet_structure=[3, 4, 6, 3],
+        resnet_block='Bottleneck',
+        use_kernel_3=True)
     model.set_force_se(True)
 
     print('Model %s created, param count: %d' % (model_name, sum([m.numel() for m in model.parameters()])))
-
 
     optim_args = argparse.Namespace()
     optim_config = vars(optim_args)
@@ -49,9 +50,9 @@ def create_NASglobal_model(num_classes = 10) :
     optim_config['momentum'] = 0.9
 
     optimizer = create_optimizer(optim_args, model)
-    loss = train_loss_fn = nn.CrossEntropyLoss().cuda() # hardcoded, however it must me selected by trial
+    loss = train_loss_fn = nn.CrossEntropyLoss().cuda()  # hardcoded, however it must me selected by trial
 
-    return model , loss , optimizer
+    return model, loss, optimizer
 
 
 class Net(nn.Module):

@@ -1,6 +1,6 @@
 services:
   client5:
-    command: sh -c 'pip install -r requirements.txt && python client.py data/clients/5/settings-client.yaml'
+    command: sh -c 'python client.py settings/settings-client.yaml'
     container_name: client5
     deploy:
       resources:
@@ -9,9 +9,9 @@ services:
           - capabilities:
             - gpu
             device_ids:
-            - MIG-GPU-6ff250df-07f5-cf8e-bfdb-d56c3c464126/2/0
+            - "0"
             driver: nvidia
-    image: pytorch/pytorch:1.9.0-cuda11.1-cudnn8-runtime
+    image: fedn-image:latest
     ports:
     - 8095:8095
     volumes:

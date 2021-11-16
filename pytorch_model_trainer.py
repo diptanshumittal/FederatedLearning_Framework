@@ -1,5 +1,7 @@
 import collections
-from model.mnist_pytorch_model import create_seed_model, create_NASglobal_model
+import threading
+
+from model.pytorch_models import create_seed_model, create_NASglobal_model
 import torch
 from helper.pytorch_helper import PytorchHelper
 from torch.utils.data import DataLoader
@@ -110,22 +112,17 @@ class NasTrainer:
 class PytorchModelTrainer:
     def __init__(self, config):
         self.helper = PytorchHelper()
+        self.stop_event = threading.Event()
+        self.trainer_type = config["trainer"]
         self.global_model_path = config["global_model_path"]
-        self.model, self.loss, self.optimizer = create_seed_model()
+        self.model, self.loss, self.optimizer = create_seed_model(config["model"])
         os.environ['CUDA_VISIBLE_DEVICES'] = config["cuda_device"]
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print("Device being used for training :", self.device, flush=True)
-        if config["dataset"] == "Imagenet":
-            self.train_loader = DataLoader(self.helper.read_data_imagenet(data_path=config["data_path"]),
-                                           batch_size=int(config['batch_size']), shuffle=True)
-            self.test_loader = DataLoader(self.helper.read_data_imagenet(data_path=config["data_path"], trainset=False),
-                                          batch_size=int(config['batch_size']), shuffle=True)
-        else:
-            self.train_loader = DataLoader(self.helper.read_data(data_path=config["data_path"]),
-                                           batch_size=int(config['batch_size']), shuffle=True)
-            self.test_loader = DataLoader(self.helper.read_data(data_path=config["data_path"], trainset=False),
-                                          batch_size=int(config['batch_size']), shuffle=True)
-        print(len(self.train_loader))
+        self.train_loader = DataLoader(self.helper.read_data(config["dataset"], config["data_path"], True),
+                                       batch_size=int(config['batch_size']), shuffle=True)
+        self.test_loader = DataLoader(self.helper.read_data(config["dataset"], config["data_path"], False),
+                                      batch_size=int(config['batch_size']), shuffle=True)
 
     def evaluate(self, dataloader):
         self.model.eval()
@@ -133,6 +130,8 @@ class PytorchModelTrainer:
         train_correct = 0
         with torch.no_grad():
             for x, y in dataloader:
+                if self.stop_event.is_set():
+                    return float(0), float(0)
                 x, y = x.to(self.device), y.to(self.device)
                 output = self.model(x)
                 train_loss += 32 * self.loss(output, y).item()
@@ -167,6 +166,8 @@ class PytorchModelTrainer:
             # print("Epoch :",i)
             # pre = time.time()
             for x, y in self.train_loader:
+                if self.stop_event.is_set():
+                    return
                 try:
                     x, y = x.to(self.device), y.to(self.device)
                     # print("Loaded Data on GPU", flush=True)
@@ -184,7 +185,8 @@ class PytorchModelTrainer:
                     exit()
         print("-- TRAINING COMPLETED --", flush=True)
 
-    def start_round(self, round_config):
+    def start_round(self, round_config, stop_event):
+        self.stop_event = stop_event
         self.model.load_state_dict(np_to_weights(self.helper.load_model(self.global_model_path)))
         self.model.to(self.device)
         self.train(round_config)
@@ -194,16 +196,16 @@ class PytorchModelTrainer:
         return report
 
 
-if __name__ == "__main__":
-    setup_config = {
-        "data_path": "data/clients/5/mnist.npz",
-        "global_model_path": "weights/initial_model.npz",
-        "dataset": "MNIST",
-        "batch_size": 500,
-        "cuda_device": "MIG-GPU-6ff250df-07f5-cf8e-bfdb-d56c3c464126/2/0"
-    }
-    modelTrainer = NasTrainer(setup_config)
-    settings = {
-        "epochs": 1
-    }
-    print(modelTrainer.start_round(settings))
+# if __name__ == "__main__":
+#     setup_config = {
+#         "data_path": "data/clients/5/mnist.npz",
+#         "global_model_path": "weights/initial_model.npz",
+#         "dataset": "MNIST",
+#         "batch_size": 500,
+#         "cuda_device": "MIG-GPU-6ff250df-07f5-cf8e-bfdb-d56c3c464126/2/0"
+#     }
+#     modelTrainer = NasTrainer(setup_config)
+#     settings = {
+#         "epochs": 1
+#     }
+#     print(modelTrainer.start_round(settings))

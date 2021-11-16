@@ -5,7 +5,7 @@ from minio import Minio
 import torch
 import requests as r
 from client.client_rest_service import ClientRestService
-from model_trainer import PytorchModelTrainer, NasTrainer
+from pytorch_model_trainer import PytorchModelTrainer, NasTrainer
 import sys
 
 
@@ -19,10 +19,23 @@ class Server:
 
     def send_round_complete_request(self, round_id, report):
         try:
-            retval = r.get("{}?round_id={}&client_id={}&report={}".format(self.connect_string + '/roundcompletedbyclient',
-                                                                 round_id, self.id, report))
+            retval = r.get(
+                "{}?round_id={}&client_id={}&report={}".format(self.connect_string + '/roundcompletedbyclient',
+                                                               round_id, self.id, report))
             if retval.json()['status'] == "Success":
-                print("Round ended successfully and notification sent to server",flush=True)
+                print("Round ended successfully and notification received by server successfully", flush=True)
+                return True
+            return False
+        except Exception as e:
+            return False
+
+    def send_round_stop_request(self, round_id):
+        try:
+            retval = r.get(
+                "{}?round_id={}&client_id={}".format(self.connect_string + '/roundstoppedbyclient',
+                                                     round_id, self.id))
+            if retval.json()['status'] == "Success":
+                print("Round stopped successfully and notification received by server successfully", flush=True)
                 return True
             return False
         except Exception as e:
@@ -68,7 +81,14 @@ class Client:
                 print('Failed to read config from settings file, exiting.', flush=True)
                 exit()
                 raise e
-        print("Settings file loaded successfully !!!")
+        with open("settings/settings-model.yaml", 'r') as file:
+            try:
+                model_config = dict(yaml.safe_load(file))
+            except yaml.YAMLError as e:
+                print('Failed to read model_config from settings file', flush=True)
+                raise e
+        fedn_config["training"]["model"] = model_config
+        print("Setting files loaded successfully !!!")
         try:
             storage_config = fedn_config["storage"]
             assert (storage_config["storage_type"] == "S3")
@@ -85,10 +105,7 @@ class Client:
         print("Minio client connected successfully !!!")
 
         try:
-            if fedn_config["training"]["trainer"] == "nas":
-                self.model_trainer = NasTrainer(fedn_config["training"])
-            else:
-                self.model_trainer = PytorchModelTrainer(fedn_config["training"])
+            self.model_trainer = PytorchModelTrainer(fedn_config["training"])
         except Exception as e:
             print("Error in model trainer setup ", e)
             exit()

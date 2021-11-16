@@ -11,7 +11,7 @@ services:
             - capabilities:
                 - gpu
               device_ids:
-                - "MIG-GPU-6ff250df-07f5-cf8e-bfdb-d56c3c464126/2/0"
+                - "0"
               driver: nvidia
     working_dir: /app/
     command: sh -c "pip install -r requirements.txt && python reducer.py"

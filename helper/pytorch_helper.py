@@ -7,7 +7,7 @@ import torch
 from torch.utils.data import TensorDataset
 
 
-class PytorchHelper():
+class PytorchHelper:
 
     def increment_average(self, model, model_next, n):
         """ Update an incremental average. """
@@ -35,7 +35,13 @@ class PytorchHelper():
             weights_np[i] = b[i]
         return weights_np
 
-    def read_data(self, data_path, trainset=True):
+    def read_data(self, dataset, data_path, trainset):
+        if dataset == "Imagenet":
+            return self.read_data_imagenet(data_path, trainset)
+        elif dataset == "mnist":
+            return self.read_data_mnist(data_path, trainset)
+
+    def read_data_mnist(self, data_path, trainset=True):
         pack = np.load(data_path)
         if trainset:
             X = pack['x_train']
@@ -52,24 +58,24 @@ class PytorchHelper():
         dataset = TensorDataset(tensor_x, tensor_y)
         return dataset
 
-    def read_data_mnist(self, data_path, trainset=True):
-        pack = np.load(data_path)
-        if trainset:
-            X = pack['x_train']
-            y = pack['y_train']
-        else:
-            X = pack['x_test']
-            y = pack['y_test']
-        X = X.astype('float32')
-        y = y.astype('int64')
-        print(X.shape)
-        X = np.repeat(X , 3 , axis=2).reshape(len(X) , 3,28,28)
-        X /= 255
-        # print(X.shape , y.shape)
-        tensor_x = torch.Tensor(X)
-        tensor_y = torch.from_numpy(y)
-        dataset = TensorDataset(tensor_x, tensor_y)
-        return dataset
+    # def read_data_mnist(self, data_path, trainset=True):
+    #     pack = np.load(data_path)
+    #     if trainset:
+    #         X = pack['x_train']
+    #         y = pack['y_train']
+    #     else:
+    #         X = pack['x_test']
+    #         y = pack['y_test']
+    #     X = X.astype('float32')
+    #     y = y.astype('int64')
+    #     print(X.shape)
+    #     X = np.repeat(X , 3 , axis=2).reshape(len(X) , 3,28,28)
+    #     X /= 255
+    #     # print(X.shape , y.shape)
+    #     tensor_x = torch.Tensor(X)
+    #     tensor_y = torch.from_numpy(y)
+    #     dataset = TensorDataset(tensor_x, tensor_y)
+    #     return dataset
 
     def read_data_imagenet(self, data_path, trainset=True):
         pack = np.load(data_path)
@@ -88,23 +94,23 @@ class PytorchHelper():
         dataset = TensorDataset(tensor_x, tensor_y)
         return dataset
 
-    def load_model_from_BytesIO(self, model_bytesio):
-        """ Load a model from a BytesIO object. """
-        path = self.get_tmp_path()
-        with open(path, 'wb') as fh:
-            fh.write(model_bytesio)
-            fh.flush()
-        model = self.load_model(path)
-        os.unlink(path)
-        return model
-
-    def serialize_model_to_BytesIO(self, model):
-        outfile_name = self.save_model(model)
-
-        from io import BytesIO
-        a = BytesIO()
-        a.seek(0, 0)
-        with open(outfile_name, 'rb') as f:
-            a.write(f.read())
-        os.unlink(outfile_name)
-        return a
+    # def load_model_from_BytesIO(self, model_bytesio):
+    #     """ Load a model from a BytesIO object. """
+    #     path = self.get_tmp_path()
+    #     with open(path, 'wb') as fh:
+    #         fh.write(model_bytesio)
+    #         fh.flush()
+    #     model = self.load_model(path)
+    #     os.unlink(path)
+    #     return model
+    #
+    # def serialize_model_to_BytesIO(self, model):
+    #     outfile_name = self.save_model(model)
+    #
+    #     from io import BytesIO
+    #     a = BytesIO()
+    #     a.seek(0, 0)
+    #     with open(outfile_name, 'rb') as f:
+    #         a.write(f.read())
+    #     os.unlink(outfile_name)
+    #     return a
