@@ -8,12 +8,24 @@ import argparse
 # Create an initial CNN Model
 def create_seed_model(config):
     print(config)
-    model = Net()
-    loss = nn.NLLLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, eps=1e-07)
-    # Loss Function
-    loss = nn.CrossEntropyLoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    if config["model_type"] == "mnist":
+        model = Net()
+    elif config["model_type"] == "mnist":
+        model = Net()
+    else:
+        model = Net()
+    if config["loss"] == "nllloss":
+        loss = nn.NLLLoss()
+    elif config["loss"] == "nllloss":
+        loss = nn.NLLLoss()
+    else:
+        loss = nn.NLLLoss()
+    if config["optimizer"] == "adam":
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    elif config["optimizer"] == "adam":
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    else:
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)    
     return model, loss, optimizer
 
 

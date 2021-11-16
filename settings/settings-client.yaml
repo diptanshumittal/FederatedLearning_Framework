@@ -18,4 +18,4 @@ training:
   data_path: data/clients/5/mnist.npz
   dataset: mnist
   global_model_path: data/clients/5/weights.npz
-  trainer: nas
+  trainer: model_training
