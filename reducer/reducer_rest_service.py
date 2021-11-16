@@ -128,6 +128,8 @@ class ReducerRestService:
         def stop_training_request():
             if self.training is None or self.status == "Idle":
                 return jsonify({"status": "Training not running!!"})
+            if self.status == "Stopping":
+                return jsonify({"status": "Stop Training request already received!!"})
             threading.Thread(target=self.stop_training, daemon=True).start()
             self.status = "Stopping"
             return jsonify({"status": "Stopping"})

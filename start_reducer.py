@@ -9,7 +9,7 @@ def run_container(cmd):
 
 
 def start_reducer():
-    threading.Thread(target=run_container, args=("docker-compose -f docker/minio.yaml up >> data/miniologs.txt",), daemon=True).start()
+    threading.Thread(target=run_container, args=("docker-compose -f docker/minio.yaml up",), daemon=True).start()
     time.sleep(5)
     threading.Thread(target=run_container, args=("docker-compose -f docker/reducer.yaml up >> data/reducer/log.txt",),daemon=True).start()
     time.sleep(5)

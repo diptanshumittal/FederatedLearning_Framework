@@ -6,15 +6,15 @@ services:
       resources:
         reservations:
           devices:
-          - capabilities:
-            - gpu
-            device_ids:
-            - "0"
-            driver: nvidia
-    image: fedn-image:latest
+            - capabilities:
+                - gpu
+              device_ids:
+                - "MIG-GPU-6ff250df-07f5-cf8e-bfdb-d56c3c464126/2/0"
+              driver: nvidia
+    image: "fedn-container:v1"
     ports:
-    - 8095:8095
+      - 8095:8095
     volumes:
-    - ${PWD}:/app
+      - ${PWD}:/app
     working_dir: /app/
-version: '3.3'
+version: "3.3"

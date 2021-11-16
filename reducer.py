@@ -46,6 +46,7 @@ class Reducer:
         except Exception as e:
             print("Error while creating seed model : ", e)
             raise e
+        print("Seed model created successfully !!")
         try:
             storage_config = fedn_config["storage"]
             assert (storage_config["storage_type"] == "S3")
