@@ -75,7 +75,7 @@ class ClientRestService:
                 if res:
                     break
                 time.sleep(3)
-            if res == False:
+            if not res:
                 print("Notification not sent to reducer successfully!!!", flush=True)
         except Exception as e:
             print("Error during round :", e)

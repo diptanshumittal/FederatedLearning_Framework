@@ -238,13 +238,12 @@ class ReducerRestService:
                 round_time += 1
                 time.sleep(1)
 
-            if self.stop_training_event.is_set():
-                return
-
             model = None
             helper = PytorchHelper()
             processed_model = 0
             for obj in self.minio_client.list_objects(bucket_name):
+                if self.stop_training_event.is_set():
+                    break
                 self.minio_client.fget_object(bucket_name, obj.object_name, obj.object_name)
                 if processed_model == 0:
                     model = helper.load_model(obj.object_name)
@@ -254,12 +253,15 @@ class ReducerRestService:
                 processed_model += 1
                 os.remove(obj.object_name)
 
-            if model:
+            if model and not self.stop_training_event.is_set():
                 model_name = str(uuid.uuid4()) + ".npz"
                 helper.save_model(model, model_name)
                 self.minio_client.fput_object("fedn-context", model_name, model_name)
                 self.global_model = model_name
                 os.remove(model_name)
+
+            if self.stop_training_event.is_set():
+                return
         print("Training for {} rounds ended with global model {}".format(str(config["rounds"]), self.global_model),
               flush=True)
         self.status = "Idle"
