@@ -5,7 +5,7 @@ from minio import Minio
 import torch
 import requests as r
 from client.client_rest_service import ClientRestService
-from pytorch_model_trainer import PytorchModelTrainer, NasTrainer
+from pytorch_model_trainer import PytorchModelTrainer
 import sys
 
 
@@ -74,6 +74,11 @@ class Server:
 class Client:
     def __init__(self, settings_path):
         """ """
+        import socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        print("Print self IP :",s.getsockname()[0])
+        s.close()
         with open(settings_path, 'r') as file:
             try:
                 fedn_config = dict(yaml.safe_load(file))
@@ -87,7 +92,7 @@ class Client:
             except yaml.YAMLError as e:
                 print('Failed to read model_config from settings file', flush=True)
                 raise e
-        fedn_config["training"]["model"] = model_config
+        fedn_config["training"]["model"] = model_config["model"]
         print("Setting files loaded successfully !!!")
         try:
             storage_config = fedn_config["storage"]

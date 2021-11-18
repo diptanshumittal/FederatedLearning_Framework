@@ -20,10 +20,8 @@ tensorboard:
 storage:
   storage_type: S3
   storage_config:
-    storage_hostname: 192.168.3.19
+    storage_hostname: 10.0.0.34
     storage_port: 9000
     storage_access_key: fedn_admin
     storage_secret_key: password
     storage_secure_mode: False
-
-

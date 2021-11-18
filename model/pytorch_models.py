@@ -7,7 +7,6 @@ import argparse
 
 # Create an initial CNN Model
 def create_seed_model(config):
-    print(config)
     if config["model_type"] == "mnist":
         model = Net()
     elif config["model_type"] == "mnist":

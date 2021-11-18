@@ -29,8 +29,12 @@ class PytorchModelTrainer:
         self.trainer_type = config["trainer"]
         self.global_model_path = config["global_model_path"]
         self.model, self.loss, self.optimizer = create_seed_model(config["model"])
-        os.environ['CUDA_VISIBLE_DEVICES'] = config["cuda_device"]
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        # os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3" 
+        # torch.cuda.set_device(int(config["cuda_device"]))
+        # print(torch.cuda.current_device())
+        # os.environ['CUDA_VISIBLE_DEVICES'] = config["cuda_device"]
+        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device(config["cuda_device"])
         print("Device being used for training :", self.device, flush=True)
         self.train_loader = DataLoader(self.helper.read_data(config["dataset"], config["data_path"], True),
                                        batch_size=int(config['batch_size']), shuffle=True)
