@@ -1,6 +1,6 @@
 training:
   batch_size: 1000
-  cuda_device: cuda:0
+  cuda_device: cuda:3
   dataset: mnist
-  directory: data/clients/5/
+  directory: data/clients/8/
   trainer: model_training

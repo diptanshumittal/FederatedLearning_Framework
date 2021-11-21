@@ -85,6 +85,7 @@ class Reducer:
             self.minio_client.put_object(self.buckets[0], "reducer_config.txt", reducer_config_as_a_stream,
                                          length=reducer_config_as_a_stream.getbuffer().nbytes)
             self.minio_client.fput_object(self.buckets[0], self.global_model, self.global_model_path)
+            print("Address - http://",get_local_ip(),":",self.port)
         except Exception as e:
             print(e)
             print("Error while setting up minio configuration")

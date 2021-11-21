@@ -2,7 +2,7 @@ from minio import Minio
 import yaml
 
 
-with open("settings/settings-reducer.yaml", 'r') as file:
+with open("settings/settings-common.yaml", 'r') as file:
     try:
         fedn_config = dict(yaml.safe_load(file))
     except yaml.YAMLError as e:

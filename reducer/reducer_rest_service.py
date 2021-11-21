@@ -25,20 +25,27 @@ class Client:
         self.testing_loss = [0] * rounds
 
     def send_round_start_request(self, round_id, bucket_name, global_model, epochs):
-        retval = r.get(
-            "{}?round_id={}&bucket_name={}&global_model={}&epochs={}".format(self.connect_string + '/startround',
-                                                                             round_id, bucket_name, global_model,
-                                                                             epochs))
-        if retval.json()['status'] == "started":
-            return True
-        return False
+        try:
+            retval = r.get(
+                "{}?round_id={}&bucket_name={}&global_model={}&epochs={}".format(self.connect_string + '/startround',
+                                                                                round_id, bucket_name, global_model,
+                                                                                epochs))
+            if retval.json()['status'] == "started":
+                return True
+            return False
+        except Exception as e:
+            print("Error while send_round_start_request ",e, flush=True)
+            return False
 
     def send_round_stop_request(self):
-        retval = r.get(
-            "{}".format(self.connect_string + '/stopround'))
-        if retval.json()['status'] == "stopping":
-            return True
-        return False
+        try:
+            retval = r.get("{}".format(self.connect_string + '/stopround'))
+            if retval.json()['status'] == "stopping":
+                return True
+            return False
+        except Exception as e:
+            print("Error while send_round_stop_request ",e, flush=True)
+            return False
 
     def update_last_checked(self):
         self.last_checked = time.time()
