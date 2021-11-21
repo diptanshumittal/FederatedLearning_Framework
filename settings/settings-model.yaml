@@ -1,4 +1,0 @@
-model:
-  model_type: mnist
-  optimizer: adam
-  loss: nllloss

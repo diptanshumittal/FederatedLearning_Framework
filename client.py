@@ -1,12 +1,31 @@
+import sys
 import time
-import threading
 import yaml
-from minio import Minio
+import json
 import torch
+import socket
+import threading
 import requests as r
+from minio import Minio
+from contextlib import closing
 from client.client_rest_service import ClientRestService
 from pytorch_model_trainer import PytorchModelTrainer
-import sys
+
+
+def find_free_port():
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(('', 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return str(s.getsockname()[1])
+
+
+def get_local_ip():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    ip = s.getsockname()[0]
+    print(ip)
+    s.close()
+    return ip
 
 
 class Server:
@@ -73,29 +92,30 @@ class Server:
 
 class Client:
     def __init__(self, settings_path):
-        """ """
-        import socket
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        print("Print self IP :",s.getsockname()[0])
-        s.close()
         with open(settings_path, 'r') as file:
             try:
                 fedn_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
                 print('Failed to read config from settings file, exiting.', flush=True)
                 exit()
-                raise e
-        with open("settings/settings-model.yaml", 'r') as file:
+        with open("settings/settings-common.yaml", 'r') as file:
             try:
-                model_config = dict(yaml.safe_load(file))
+                common_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
                 print('Failed to read model_config from settings file', flush=True)
                 raise e
-        fedn_config["training"]["model"] = model_config["model"]
         print("Setting files loaded successfully !!!")
+        fedn_config["training"]["model"] = common_config["model"]
+        fedn_config["client"] = {
+            "hostname": get_local_ip(),
+            "port": find_free_port()
+        }
+        fedn_config["training"]["data_path"] = fedn_config["training"]["directory"] + "mnist.npz"
+        fedn_config["training"]["global_model_path"] = fedn_config["training"]["directory"] + "weights.npz"
+
+
         try:
-            storage_config = fedn_config["storage"]
+            storage_config = common_config["storage"]
             assert (storage_config["storage_type"] == "S3")
             minio_config = storage_config["storage_config"]
             self.minio_client = Minio("{0}:{1}".format(minio_config["storage_hostname"], minio_config["storage_port"]),
@@ -109,6 +129,15 @@ class Client:
             exit()
         print("Minio client connected successfully !!!")
 
+        try:
+            response = self.minio_client.get_object('fedn-context', "reducer_config.txt")
+            fedn_config["reducer"] = json.loads(response.data)["reducer"]
+        except Exception as e:
+            print("Error in loading reducer_config file from minio", e)
+            exit()
+        finally:
+            response.close()
+            response.release_conn()
         try:
             self.model_trainer = PytorchModelTrainer(fedn_config["training"])
         except Exception as e:
@@ -163,8 +192,10 @@ if __name__ == "__main__":
     if not torch.cuda.is_available():
         print("Cuda not available!!")
         exit()
-    print(torch.__version__, flush=True)
+    # print(torch.__version__, flush=True)
     try:
+        if len(sys.argv) == 1:
+            sys.argv.append("settings/settings-client.yaml")
         client = Client(sys.argv[1])
         client.run()
     except Exception as e:

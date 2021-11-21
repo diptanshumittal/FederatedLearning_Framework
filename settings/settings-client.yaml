@@ -1,21 +1,6 @@
-client:
-  hostname: 10.0.0.34
-  port: 8095
-reducer:
-  hostname: 10.0.0.34
-  port: 8090
-storage:
-  storage_config:
-    storage_access_key: fedn_admin
-    storage_hostname: 10.0.0.34
-    storage_port: 9000
-    storage_secret_key: password
-    storage_secure_mode: false
-  storage_type: S3
 training:
-  batch_size: 10000
-  cuda_device: "cuda:0"
-  data_path: data/clients/5/mnist.npz
+  batch_size: 1000
+  cuda_device: cuda:0
   dataset: mnist
-  global_model_path: data/clients/5/weights.npz
+  directory: data/clients/5/
   trainer: model_training

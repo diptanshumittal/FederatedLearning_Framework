@@ -21,6 +21,8 @@ class Client:
         self.last_checked = time.time()
         self.training_acc = [0] * rounds
         self.testing_acc = [0] * rounds
+        self.training_loss = [0] * rounds
+        self.testing_loss = [0] * rounds
 
     def send_round_start_request(self, round_id, bucket_name, global_model, epochs):
         retval = r.get(
@@ -48,7 +50,6 @@ class Client:
 class ReducerRestService:
 
     def __init__(self, minio_client, config):
-        # print(config)
         self.minio_client = minio_client
         self.port = config['flask_port']
         self.clients = {}
@@ -64,8 +65,8 @@ class ReducerRestService:
     def remove_disconnected_clients(self):
         while True:
             self.clients = {client: self.clients[client] for client in self.clients if
-                            self.clients[client].get_last_checked() < 15}
-            print("Connected clients - ", len(self.clients), flush=True)
+                            self.clients[client].get_last_checked() < 50}
+            print("Connected clients - ", self.clients, flush=True)
             time.sleep(60)
 
     def stop_training(self):
@@ -84,7 +85,7 @@ class ReducerRestService:
 
     def run(self):
         log = logging.getLogger('werkzeug')
-        # log.setLevel(logging.ERROR)
+        log.setLevel(logging.ERROR)
         app = Flask(__name__)
 
         @app.route('/')
@@ -149,16 +150,16 @@ class ReducerRestService:
                            "round_time": 0}
                 else:
                     res = json.loads(res)
-                    # res["training_accuracy"] = float(res["training_accuracy"])
-                    # res["test_accuracy"] = float(res["test_accuracy"])
                 writer.add_scalar('training_loss', res["training_loss"], round_id)
                 writer.add_scalar('test_loss', res["test_loss"], round_id)
                 writer.add_scalar('training_accuracy', res["training_accuracy"], round_id)
                 writer.add_scalar('test_accuracy', res["test_accuracy"], round_id)
                 writer.add_scalar('round_time', res["round_time"], round_id)
                 writer.close()
-                # self.clients[id].training_acc.append(res["training_accuracy"])
-                # self.clients[id].testing_acc.append(res["test_accuracy"])
+                self.clients[id].training_acc.append(float(res["training_accuracy"]))
+                self.clients[id].testing_acc.append(float(res["test_accuracy"]))
+                self.clients[id].training_loss.append(float(res["training_loss"]))
+                self.clients[id].testing_loss.append(float(res["test_loss"]))
                 return jsonify({'status': "Success"})
             return jsonify({'status': "Failure"})
 
@@ -191,15 +192,21 @@ class ReducerRestService:
         def create_graph():
             for key, client in self.clients.items():
                 x = np.linspace(1, len(client.training_acc), len(client.training_acc))
-                print(x)
-                print(client.training_acc)
                 plt.plot(x, client.training_acc, "-b", label="Train_Acc")
                 plt.plot(x, client.testing_acc, "-r", label="Test_Acc")
                 plt.legend(loc="upper right")
                 plt.xlabel("Rounds")
                 plt.ylabel("Accuracy")
                 plt.title("Rounds vs Accuracy for client : " + key)
-                plt.savefig(key + '.png')
+                plt.savefig(key + '_Acc.png')
+                plt.clf()
+                plt.plot(x, client.training_loss, "-b", label="Train_loss")
+                plt.plot(x, client.testing_loss, "-r", label="Test_loss")
+                plt.legend(loc="upper right")
+                plt.xlabel("Rounds")
+                plt.ylabel("Loss")
+                plt.title("Rounds vs Loss for client : " + key)
+                plt.savefig(key + '_Loss.png')
                 plt.clf()
             ret = {
                 'status': "Created"
