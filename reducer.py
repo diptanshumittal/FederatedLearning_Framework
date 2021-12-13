@@ -54,7 +54,7 @@ class Reducer:
 
         if not os.path.exists(fedn_config["tensorboard"]["path"]):
             os.mkdir(fedn_config["tensorboard"]["path"])
-        # threading.Thread(target=run_tensorboard, args=(fedn_config["tensorboard"],), daemon=True).start()
+        threading.Thread(target=run_tensorboard, args=(fedn_config["tensorboard"],), daemon=True).start()
         try:
             if not os.path.exists('data/reducer'):
                 os.mkdir('data/reducer')

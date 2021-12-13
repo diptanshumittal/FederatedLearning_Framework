@@ -1,0 +1,13 @@
+model:
+  model_type: mnist
+  optimizer: adam
+  loss: nllloss
+
+storage:
+  storage_type: S3
+  storage_config:
+    storage_hostname: 10.0.0.15
+    storage_port: 9000
+    storage_access_key: minioadmin
+    storage_secret_key: minioadmin
+    storage_secure_mode: False

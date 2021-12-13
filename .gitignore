@@ -22,7 +22,6 @@
 /HardCoreNAS/nas/nas_utils/__pycache__
 /HardCoreNAS/nas/src/__pycache__
 /HardCoreNAS/nas/src/optim/__pycache__
-/settings
 /docker
 /minio_data
 minio
