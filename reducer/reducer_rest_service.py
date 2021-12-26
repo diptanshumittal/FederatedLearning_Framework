@@ -28,13 +28,13 @@ class Client:
         try:
             retval = r.get(
                 "{}?round_id={}&bucket_name={}&global_model={}&epochs={}".format(self.connect_string + '/startround',
-                                                                                round_id, bucket_name, global_model,
-                                                                                epochs))
+                                                                                 round_id, bucket_name, global_model,
+                                                                                 epochs))
             if retval.json()['status'] == "started":
                 return True
             return False
         except Exception as e:
-            print("Error while send_round_start_request ",e, flush=True)
+            print("Error while send_round_start_request ", e, flush=True)
             return False
 
     def send_round_stop_request(self):
@@ -44,7 +44,7 @@ class Client:
                 return True
             return False
         except Exception as e:
-            print("Error while send_round_stop_request ",e, flush=True)
+            print("Error while send_round_stop_request ", e, flush=True)
             return False
 
     def update_last_checked(self):
@@ -254,20 +254,25 @@ class ReducerRestService:
 
             model = None
             helper = PytorchHelper()
+            self.minio_client.fget_object('fedn-context', self.global_model, self.global_model)
+            base_model = helper.load_model(self.global_model)
+            os.remove(self.global_model)
+            reducer_learning_rate = 1
             processed_model = 0
             for obj in self.minio_client.list_objects(bucket_name):
                 if self.stop_training_event.is_set():
                     break
                 self.minio_client.fget_object(bucket_name, obj.object_name, obj.object_name)
                 if processed_model == 0:
-                    model = helper.load_model(obj.object_name)
+                    model = helper.get_tensor_diff(helper.load_model(obj.object_name), base_model)
                 else:
-                    model = helper.increment_average(model, helper.load_model(obj.object_name),
+                    model = helper.increment_average(model, helper.get_tensor_diff(helper.load_model(obj.object_name), base_model),
                                                      processed_model + 1)
                 processed_model += 1
                 os.remove(obj.object_name)
 
             if model and not self.stop_training_event.is_set():
+                model = helper.add_base_model(model, base_model, reducer_learning_rate)
                 model_name = str(uuid.uuid4()) + ".npz"
                 helper.save_model(model, model_name)
                 self.minio_client.fput_object("fedn-context", model_name, model_name)

@@ -22,6 +22,18 @@ class PytorchHelper:
     #     os.close(fd)
     #     return path
 
+    def get_tensor_diff(self, model, base_model):
+        w = OrderedDict()
+        for name in model.keys():
+            w[name] = model[name] - base_model[name]
+        return w
+
+    def add_base_model(self, tensordiff, base_model, learning_rate):
+        w = OrderedDict()
+        for name in tensordiff.keys():
+            w[name] = learning_rate*tensordiff[name] + base_model[name]
+        return w
+
     def save_model(self, weights_dict, path=None):
         if not path:
             path = self.get_tmp_path()
