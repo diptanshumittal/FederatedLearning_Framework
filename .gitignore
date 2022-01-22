@@ -4,13 +4,14 @@
 /weights/clients/*
 /logs/*
 /data/clients
-/client/__pycache__
+/Client/__pycache__
 /helper/__pycache__
 /model/__pycache__
-/reducer/__pycache__
+/Reducer/__pycache__
 /weights
 /data/reducer
 /data/runs
+/data/minio_logs
 /HardCoreNAS/__pycache__
 /HardCoreNAS/external/__pycache__
 /HardCoreNAS/nas/__pycache__
@@ -25,3 +26,5 @@
 /docker
 /minio_data
 minio
+list_alphas.pkl
+lut.pkl

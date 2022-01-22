@@ -6,7 +6,7 @@ from torch.distributed import get_rank, get_world_size, new_group, barrier
 logger = logging.getLogger(__name__)
 
 
-class DistributedManager():
+class DistributedManager:
     distributed = False
     grp = None
     local_rank = 0

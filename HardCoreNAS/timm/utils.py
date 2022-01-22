@@ -13,7 +13,7 @@ import torch.nn as nn
 import torchvision
 from torch import distributed as dist
 
-from HardCoreNAS.external import DistributedManager
+from HardCoreNAS.external.distributed_manager import DistributedManager
 
 
 def unwrap_model(model):

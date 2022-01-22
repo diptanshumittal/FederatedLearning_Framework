@@ -5,7 +5,7 @@ from cvxopt import matrix, solvers
 from torch.optim.optimizer import Optimizer
 from tqdm import tqdm
 
-from HardCoreNAS.nas.nas_utils.general_purpose import update_alpha_beta_tensorboard
+# from HardCoreNAS.nas.nas_utils.general_purpose import update_alpha_beta_tensorboard
 from HardCoreNAS.nas.src.optim.utils import *
 
 np.set_printoptions(threshold=sys.maxsize, suppress=True, precision=11)
@@ -49,24 +49,19 @@ class BlockFrankWolfe(Optimizer):
         self._beta_grad_buf = None
         self.start_with_alpha = start_with_alpha
 
-
     @property
     def fixed_latency(self):
         return self._fixed_latency
-
 
     @fixed_latency.setter
     def fixed_latency(self, fixed_latency):
         self._fixed_latency = fixed_latency
 
-
     def set_epoch(self, epoch=None):
         self._epoch = epoch
 
-
     def is_done(self):
         return self._done
-
 
     def _bounds_0_1_matrices(self, n):
         # Bounds as inequalities
@@ -80,7 +75,6 @@ class BlockFrankWolfe(Optimizer):
         self.b_bounds = np.concatenate((b_lb, b_ub), axis=0)
 
         return self.A_bounds, self.b_bounds
-
 
     def _alpha_beta_latency_matrix(self, alpha_blocks, beta_blocks, latency_vec):
         if self.Q is not None and self.p is not None:
@@ -124,7 +118,6 @@ class BlockFrankWolfe(Optimizer):
 
         return self.Q, self.p
 
-
     def _latency_constraint(self, alpha_blocks, beta_blocks, latency_vec, alpha_vec=None, beta_vec=None):
         assert alpha_vec is not None or beta_vec is not None
 
@@ -138,7 +131,6 @@ class BlockFrankWolfe(Optimizer):
             b_latency = np.array([self.T - self._fixed_latency])
 
         return np.asmatrix(A_latency), b_latency
-
 
     def _simplex_eq_constraint(self, blocks, n=None):
         assert n is None or n == np.sum(blocks)
@@ -157,7 +149,6 @@ class BlockFrankWolfe(Optimizer):
         self.b_eq = np.ones(rows)
 
         return self.A_eq, self.b_eq
-
 
     def _close_consecutive(self, blocks, n=None):
         assert n is None or n == np.sum(blocks)
@@ -178,7 +169,6 @@ class BlockFrankWolfe(Optimizer):
 
         P = U.T @ U
         return P
-
 
     def alpha_qp_step(self, alpha_attention_vec, alpha_blocks, latency_vec, beta_attention_vec, beta_blocks):
         alphas = len(alpha_attention_vec)
@@ -240,7 +230,6 @@ class BlockFrankWolfe(Optimizer):
         alpha_attention_vec += gamma_step * (alpha - alpha_attention_vec)
 
         return alpha_attention_vec
-
 
     def beta_qp_step(self, alpha_attention_vec, alpha_blocks, latency_vec, beta_attention_vec, beta_blocks):
         betas = len(beta_attention_vec)
@@ -312,12 +301,10 @@ class BlockFrankWolfe(Optimizer):
 
         return beta_attention_vec
 
-
     def reset_state(self):
         self._same_alpha = False
         self._same_beta = False
         self._done = False
-
 
     def bc_qp_init(self):
         self.reset_state()
@@ -351,7 +338,6 @@ class BlockFrankWolfe(Optimizer):
 
         self.set_max_gamma_step(max_gamma)
         self._one_gamma = one_gamma
-
 
     def sparsify(self, alpha_negative_importance=None, beta_negative_importance=None):
         self.reset_state()
@@ -392,7 +378,6 @@ class BlockFrankWolfe(Optimizer):
 
         self.set_max_gamma_step(max_gamma)
         self._one_gamma = one_gamma
-
 
     def alpha_lp(self, alpha_attention_vec, alpha_blocks, latency_vec, alpha_grad_vec, beta_attention_vec, beta_blocks):
         alphas = len(alpha_attention_vec)
@@ -464,7 +449,6 @@ class BlockFrankWolfe(Optimizer):
         alpha_attention_vec += gamma_step * (alpha - alpha_attention_vec)
 
         return alpha_attention_vec
-
 
     def beta_lp(self, alpha_attention_vec, latency_vec, alpha_blocks, beta_attention_vec, beta_grad_vec, beta_blocks):
         betas = len(beta_attention_vec)
@@ -542,7 +526,6 @@ class BlockFrankWolfe(Optimizer):
         # print(np.reshape(beta_attention_vec, (-1, 3)))
         return beta_attention_vec
 
-
     def alpha_step(self):
         # Flatten all the layers attentions, measured latencies and gradients as corresponding column stack vectors
         alpha_attention_vec, latency_vec, alpha_grad_vec, alpha_blocks, beta_attention_vec, _, beta_blocks = \
@@ -572,10 +555,9 @@ class BlockFrankWolfe(Optimizer):
         if self._epoch is not None:
             latency = self.latency_formula(alpha_attention_vec, beta_attention_vec, fixed_latency=self._fixed_latency)
             latency = {'latency_formula': latency, 'constraint': self.T}
-            update_alpha_beta_tensorboard(self._epoch + 1, self.list_alphas, self.writer, latency)
+            # update_alpha_beta_tensorboard(self._epoch + 1, self.list_alphas, self.writer, latency)
 
         return True
-
 
     def beta_step(self):
         # Flatten all the layers attentions, measured latencies and gradients as corresponding column stack vectors
@@ -606,22 +588,18 @@ class BlockFrankWolfe(Optimizer):
         if self._epoch is not None:
             latency = self.latency_formula(alpha_attention_vec, beta_attention_vec, fixed_latency=self._fixed_latency)
             latency = {'latency_formula': latency, 'constraint': self.T}
-            update_alpha_beta_tensorboard(self._epoch + 1, self.list_alphas, self.writer, latency)
+            # update_alpha_beta_tensorboard(self._epoch + 1, self.list_alphas, self.writer, latency)
 
         return True
-
 
     def latency_formula(self, alpha, beta, fixed_latency=0):
         return fixed_latency + (beta @ self.Q.T + self.p) @ alpha
 
-
     def reset_gamma_step(self):
         self.k = 0
 
-
     def set_max_gamma_step(self, val):
         self._max_gamma = min(val, 1)
-
 
     def _calculate_step_size(self, n=1, one=False):
         gamma = self._max_gamma * 2 * n / (self.k + 2 * n)
@@ -634,22 +612,18 @@ class BlockFrankWolfe(Optimizer):
 
         return gamma
 
-
     def set_writer(self, writer):
         self.writer = writer
-
 
     def requires_grad_(self, requires_grad=True):
         for group in self.param_groups:
             for p in group['params']:
                 p.requires_grad = requires_grad
 
-
     def none_grad(self):
         for group in self.param_groups:
             for p in group['params']:
                 p.grad = None
-
 
     def alternate_block_step(self):
         if self.k % 2 > 0:
@@ -659,7 +633,6 @@ class BlockFrankWolfe(Optimizer):
 
         if not success:
             self.alpha_step()
-
 
     def random_block_step(self):
         prob = torch.tensor(np.random.random()).cuda()
@@ -677,7 +650,6 @@ class BlockFrankWolfe(Optimizer):
         if not success:
             self.alpha_step()
 
-
     def step(self):
         self.reset_state()
 
@@ -686,7 +658,7 @@ class BlockFrankWolfe(Optimizer):
                 flatten_attention_latency_grad_alpha_beta_blocks(self.list_alphas)
             latency = self.latency_formula(alpha_attention_vec, beta_attention_vec, fixed_latency=self._fixed_latency)
             latency = {'latency_formula': latency, 'constraint': self.T}
-            update_alpha_beta_tensorboard(0, self.list_alphas, self.writer, latency)
+            # update_alpha_beta_tensorboard(0, self.list_alphas, self.writer, latency)
 
         if self.only_alpha:
             self.alpha_step()

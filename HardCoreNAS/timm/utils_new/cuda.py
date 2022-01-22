@@ -11,7 +11,7 @@ except ImportError:
     amp = None
     has_apex = False
 
-from HardCoreNAS.external import DistributedManager
+from HardCoreNAS.external.distributed_manager import DistributedManager
 
 
 class ApexScaler:

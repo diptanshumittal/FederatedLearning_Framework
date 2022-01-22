@@ -4,6 +4,8 @@ import logging
 import re
 import time
 from contextlib import suppress
+
+import torch
 from torch import nn
 import numpy as np
 
@@ -140,7 +142,6 @@ class CustomError(Exception):
     pass
 
 
-
 class extend_block(nn.Module):
     def __init__(self, b, e_r, index_k, is_se):
         super(extend_block, self).__init__()
@@ -159,7 +160,6 @@ class extend_block(nn.Module):
     def train(self, mode=True):
         super(extend_block, self).train(mode)
         self.sub_block[0].train(mode)
-
 
 
 STAGE_BLOCK_DELIMITER = '-'
@@ -252,9 +252,9 @@ def compute_latency(model, struct, file_name=LATENCY_FILENAME, batch_size=1, rep
 def extract_structure_param_list(model,
                                  file_name=LATENCY_FILENAME, batch_size=1, repeat_measure=200, target_device='cpu'):
     return _extract_alpha_beta_and_associated_modules_elastic(model, file_name=file_name,
-                                                                  batch_size=batch_size,
-                                                                  repeat_measure=repeat_measure,
-                                                                  target_device=target_device)
+                                                              batch_size=batch_size,
+                                                              repeat_measure=repeat_measure,
+                                                              target_device=target_device)
 
 
 def extract_resolution_stride_dict(model, struct):
@@ -341,11 +341,13 @@ def target_time_loss(list_alphas, t_max):
 def inference_time_loss(list_alphas):
     return expected_latency(list_alphas)
 
+
 def unfreeze_all(model, optim_alpha):
     # Enable weights gradient, BN statistics and alpha gradients
     model.train()
     model.requires_grad_(True)
     optim_alpha.requires_grad_(True)
+
 
 def freeze_all(model, optim_alpha):
     # Enable weights gradient, BN statistics and alpha gradients
@@ -397,7 +399,6 @@ def alpha_bilevel_backward(model, loader, loss_fn, args, list_alphas, optim_alph
 
         # Compute the loss
         loss = loss_fn(output, target)
-
 
     # Backprop
     if loss_scaler is not None:
@@ -514,5 +515,3 @@ def mean_entropies(entropy, writer=None, epoch=None):
         writer.add_scalars('total_entropy', plots, epoch)
 
     return total_alpha_entropy, total_beta_entropy, total_entropy
-
-

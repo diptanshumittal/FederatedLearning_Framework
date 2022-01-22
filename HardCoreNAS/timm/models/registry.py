@@ -94,6 +94,7 @@ def list_modules():
 
 def is_model_in_modules(model_name, module_names):
     """Check if a model exists within a subset of modules
+
     Args:
         model_name (str) - name of model to check
         module_names (tuple, list, set) - names of modules to search in
