@@ -26,5 +26,3 @@
 /docker
 /minio_data
 minio
-list_alphas.pkl
-lut.pkl
