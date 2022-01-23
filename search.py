@@ -222,6 +222,7 @@ def _parse_args():
 def get_train_val_dir(basedir):
     train_dir = val_dir = None
     for reg in 'train train_set'.split():
+        print(os.path.join(basedir, reg))
         if os.path.exists(os.path.join(basedir, reg)):
             train_dir = os.path.join(basedir, reg)
             break
@@ -299,7 +300,7 @@ def main():
     logging.info(f'Training data has {len(dataset_train)} images')
     args.num_classes = len(dataset_train.class_to_idx)
     logging.info(f'setting num classes to {args.num_classes}')
-
+    # exit()
     model = create_model(
         args.model,
         pretrained=args.pretrained,
@@ -469,19 +470,19 @@ def main():
             logging.info('AMP not enabled. Training in float32.')
 
     # optionally resume from a checkpoint
-    resume_state = {}
-    resume_epoch = None
-    if args.resume:
-        resume_state, resume_epoch = resume_checkpoint(model, args.resume)
-
-    if resume_state and not args.no_resume_opt:
-        if use_amp and 'amp' in resume_state and 'load_state_dict' in amp.__dict__:
-            if args.local_rank == 0:
-                logging.info('Restoring NVIDIA AMP state from checkpoint')
-
-            amp.load_state_dict(resume_state['amp'])
-
-    del resume_state
+    # resume_state = {}
+    # resume_epoch = None
+    # if args.resume:
+    #     resume_state, resume_epoch = resume_checkpoint(model, args.resume)
+    #
+    # if resume_state and not args.no_resume_opt:
+    #     if use_amp and 'amp' in resume_state and 'load_state_dict' in amp.__dict__:
+    #         if args.local_rank == 0:
+    #             logging.info('Restoring NVIDIA AMP state from checkpoint')
+    #
+    #         amp.load_state_dict(resume_state['amp'])
+    #
+    # del resume_state
 
     if args.distributed:
         if args.sync_bn:
