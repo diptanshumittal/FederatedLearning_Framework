@@ -36,163 +36,162 @@ np.set_printoptions(threshold=sys.maxsize, suppress=True, precision=6)
 # The first arg parser parses out only the --config argument, this argument is used to
 # load a yaml file containing key-values that override the defaults for the main parser below
 config_parser = parser = argparse.ArgumentParser(description='Training Config', add_help=False)
+parser.add_argument('-c', '--config', default='', type=str, metavar='FILE',
+                    help='YAML config file specifying default arguments')
+
+parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
+# Dataset / Model parameters
+parser.add_argument('data', metavar='DIR',
+                    help='path to dataset')
+parser.add_argument('--csv-file', default='data.csv',
+                    help='file name for csv. Expected to be in data folder')
+parser.add_argument('--model', default='mobilenasnet', type=str, metavar='MODEL',
+                    help='Name of model to train (default: "mobilenasnet"')
+parser.add_argument('--pretrained', action='store_true', default=False,
+                    help='Start with pretrained version of specified network (if avail)')
+parser.add_argument('--initial-checkpoint', default='', type=str, metavar='PATH',
+                    help='Initialize model from this checkpoint (default: none)')
+parser.add_argument('--resume', default='', type=str, metavar='PATH',
+                    help='Resume full model and optimizer state from checkpoint (default: none)')
+parser.add_argument('--no-resume-opt', action='store_true', default=False,
+                    help='prevent resume of optimizer state when resuming model')
+parser.add_argument('--num-classes', type=int, default=1000, metavar='N',
+                    help='number of label classes (default: 1000)')
+parser.add_argument('--gp', default='avg', type=str, metavar='POOL',
+                    help='Type of global pool, "avg", "max", "avgmax", "avgmaxc" (default: "avg")')
+parser.add_argument('--img-size', type=int, default=None, metavar='N',
+                    help='Image patch size (default: None => model default)')
+parser.add_argument('--crop-pct', default=None, type=float,
+                    metavar='N', help='Input image center crop percent (for validation only)')
+parser.add_argument('--mean', type=float, nargs='+', default=None, metavar='MEAN',
+                    help='Override mean pixel value of dataset')
+parser.add_argument('--std', type=float, nargs='+', default=None, metavar='STD',
+                    help='Override std deviation of of dataset')
+parser.add_argument('--interpolation', default='', type=str, metavar='NAME',
+                    help='Image resize interpolation type (overrides model)')
+parser.add_argument('--min-crop-factor', type=float, default=0.08,
+                    help='minimum size of crop for image transformation in training')
+parser.add_argument('--squish', action='store_true', default=False,
+                    help='use squish for resize input image')
+parser.add_argument('-b', '--batch-size', type=int, default=16, metavar='N',
+                    help='input batch size for training (default: 16)')
+parser.add_argument('-vb', '--validation-batch-size-multiplier', type=int, default=1, metavar='N',
+                    help='ratio of validation batch size to training batch size (default: 1)')
+parser.add_argument('--drop', type=float, default=0.0, metavar='PCT',
+                    help='Dropout rate (default: 0.)')
+parser.add_argument('--drop-connect', type=float, default=None, metavar='PCT',
+                    help='Drop connect rate, DEPRECATED, use drop-path (default: None)')
+parser.add_argument('--drop-path', type=float, default=None, metavar='PCT',
+                    help='Drop path rate (default: None)')
+parser.add_argument('--drop-block', type=float, default=None, metavar='PCT',
+                    help='Drop block rate (default: None)')
+parser.add_argument('--jsd', action='store_true', default=False,
+                    help='Enable Jensen-Shannon Divergence + CE loss. Use with `--aug-splits`.')
+
+# Augmentation parameters
+parser.add_argument('--color-jitter', type=float, default=0.4, metavar='PCT',
+                    help='Color jitter factor (default: 0.4)')
+parser.add_argument('--aa', type=str, default='rand-m9-mstd0.5', metavar='NAME',
+                    help='Use AutoAugment policy. "v0" or "original". (default: None)'),
+parser.add_argument('--aug-splits', type=int, default=0,
+                    help='Number of augmentation splits (default: 0, valid: 0 or >=2)')
+parser.add_argument('--reprob', type=float, default=0.2, metavar='PCT',
+                    help='Random erase prob (default: 0.2)')
+parser.add_argument('--remode', type=str, default='pixel',
+                    help='Random erase mode (default: "pixel")')
+parser.add_argument('--recount', type=int, default=1,
+                    help='Random erase count (default: 1)')
+parser.add_argument('--resplit', action='store_true', default=False,
+                    help='Do not random erase first (clean) augmentation split')
+parser.add_argument('--mixup', type=float, default=0.0,
+                    help='mixup alpha, mixup enabled if > 0. (default: 0.)')
+parser.add_argument('--mixup-off-epoch', default=0, type=int, metavar='N',
+                    help='turn off mixup after this epoch, disabled if 0 (default: 0)')
+parser.add_argument('--smoothing', type=float, default=0.1,
+                    help='label smoothing (default: 0.1)')
+parser.add_argument('--train-interpolation', type=str, default='random',
+                    help='Training interpolation (random, bilinear, bicubic default: "random")')
+# Batch norm parameters (only works with gen_efficientnet based models currently)
+parser.add_argument('--bn-tf', action='store_true', default=False,
+                    help='Use Tensorflow BatchNorm defaults for models that support it (default: False)')
+parser.add_argument('--bn-momentum', type=float, default=None,
+                    help='BatchNorm momentum override (if not None)')
+parser.add_argument('--bn-eps', type=float, default=None,
+                    help='BatchNorm epsilon override (if not None)')
+parser.add_argument('--sync-bn', action='store_true',
+                    help='Enable NVIDIA Apex or Torch synchronized BatchNorm.')
+parser.add_argument('--dist-bn', type=str, default='',
+                    help='Distribute BatchNorm stats between nodes after each epoch ("broadcast", "reduce", or "")')
+parser.add_argument('--split-bn', action='store_true',
+                    help='Enable separate BN layers per augmentation split.')
+# Misc
+parser.add_argument('--seed', type=int, default=42, metavar='S',
+                    help='random seed (default: 42)')
+parser.add_argument('--log-interval', type=int, default=50, metavar='N',
+                    help='how many batches to wait before logging training status')
+parser.add_argument('--recovery-interval', type=int, default=0, metavar='N',
+                    help='how many batches to wait before writing recovery checkpoint')
+parser.add_argument('-j', '--workers', type=int, default=16, metavar='N',
+                    help='how many training processes to use (default: 16)')
+parser.add_argument('--num-gpu', type=int, default=1,
+                    help='Number of GPUS to use')
+parser.add_argument('--save-images', action='store_true', default=False,
+                    help='save images of input bathes every log interval for debugging')
+parser.add_argument('--amp', type=str2bool, nargs='?', const=True, default=True,
+                    help='use NVIDIA amp for mixed precision training')
+parser.add_argument('--pin-mem', action='store_true', default=False,
+                    help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
+parser.add_argument('--no-prefetcher', action='store_true', default=False,
+                    help='disable fast prefetcher')
+parser.add_argument('--output', default='./outputs', type=str, metavar='PATH',
+                    help='path to output folder (default: none, current dir)')
+parser.add_argument('--eval-metric', default='top1', type=str, metavar='EVAL_METRIC',
+                    help='Best metric (default: "top1"')
+parser.add_argument('--tta', type=int, default=0, metavar='N',
+                    help='Test/inference time augmentation (oversampling) factor. 0=None (default: 0)')
+parser.add_argument("--local_rank", default=0, type=int)
+parser.add_argument('--nonstrict_checkpoint', type=str2bool, nargs='?', const=True, default=True,
+                    help='Ignore missmatch in size when loading model weights. Used for transfer learning')
+parser.add_argument('--tensorboard', action='store_true', default=False,
+                    help='Write to TensorboardX')
+parser.add_argument("--single-view", action='store_true', default=False,
+                    help="train only the fc layer")
+parser.add_argument("--debug", action='store_true', default=False,
+                    help="logging is set to debug")
+parser.add_argument("--train_percent", type=int, default=100,
+                    help="what percent of data to use for train (don't forget to leave out val")
+parser.add_argument('--resnet_structure', type=int, nargs='+', default=[3, 4, 6, 3], metavar='resnetstruct',
+                    help='custom resnet structure')
+parser.add_argument('--resnet_block', default='Bottleneck', type=str, metavar='block',
+                    help='custom resnet block')
+
+parser.add_argument("--ema_KD", action='store_true', default=False, help="use KD from EMA")
+parser.add_argument('--temperature_T', type=float, default=1,
+                    help='factor for temperature of the teacher')
+parser.add_argument('--temperature_S', type=float, default=1,
+                    help='factor for temperature of the student')
+parser.add_argument('--keep_only_correct', action='store_true', default=False,
+                    help='Hard threshold for training from example')
+parser.add_argument('--only_kd', action='store_true', default=False,
+                    help='Hard threshold for training from example')
+parser.add_argument('--verbose', action='store_true', default=False,
+                    help='Verbose mode')
+parser.add_argument('--clip-grad', type=float, default=None, metavar='NORM',
+                    help='Clip gradient norm (default: None, no clipping)')
+parser.add_argument('--channels-last', action='store_true', default=False,
+                    help='Use channels_last memory layout')
+parser.add_argument('--apex-amp', action='store_true', default=False,
+                    help='Use NVIDIA Apex AMP mixed precision')
+parser.add_argument('--native-amp', action='store_true', default=False,
+                    help='Use Native Torch AMP mixed precision')
 
 
-def init_parser(parser):
-    parser.add_argument('-c', '--config', default='', type=str, metavar='FILE',
-                        help='YAML config file specifying default arguments')
 
-    parser = argparse.ArgumentParser(description='PyTorch ImageNet Training')
-    # Dataset / Model parameters
-    parser.add_argument('data', metavar='DIR',
-                        help='path to dataset')
-    parser.add_argument('--csv-file', default='data.csv',
-                        help='file name for csv. Expected to be in data folder')
-    parser.add_argument('--model', default='mobilenasnet', type=str, metavar='MODEL',
-                        help='Name of model to train (default: "mobilenasnet"')
-    parser.add_argument('--pretrained', action='store_true', default=False,
-                        help='Start with pretrained version of specified network (if avail)')
-    parser.add_argument('--initial-checkpoint', default='', type=str, metavar='PATH',
-                        help='Initialize model from this checkpoint (default: none)')
-    parser.add_argument('--resume', default='', type=str, metavar='PATH',
-                        help='Resume full model and optimizer state from checkpoint (default: none)')
-    parser.add_argument('--no-resume-opt', action='store_true', default=False,
-                        help='prevent resume of optimizer state when resuming model')
-    parser.add_argument('--num-classes', type=int, default=1000, metavar='N',
-                        help='number of label classes (default: 1000)')
-    parser.add_argument('--gp', default='avg', type=str, metavar='POOL',
-                        help='Type of global pool, "avg", "max", "avgmax", "avgmaxc" (default: "avg")')
-    parser.add_argument('--img-size', type=int, default=None, metavar='N',
-                        help='Image patch size (default: None => model default)')
-    parser.add_argument('--crop-pct', default=None, type=float,
-                        metavar='N', help='Input image center crop percent (for validation only)')
-    parser.add_argument('--mean', type=float, nargs='+', default=None, metavar='MEAN',
-                        help='Override mean pixel value of dataset')
-    parser.add_argument('--std', type=float, nargs='+', default=None, metavar='STD',
-                        help='Override std deviation of of dataset')
-    parser.add_argument('--interpolation', default='', type=str, metavar='NAME',
-                        help='Image resize interpolation type (overrides model)')
-    parser.add_argument('--min-crop-factor', type=float, default=0.08,
-                        help='minimum size of crop for image transformation in training')
-    parser.add_argument('--squish', action='store_true', default=False,
-                        help='use squish for resize input image')
-    parser.add_argument('-b', '--batch-size', type=int, default=16, metavar='N',
-                        help='input batch size for training (default: 16)')
-    parser.add_argument('-vb', '--validation-batch-size-multiplier', type=int, default=1, metavar='N',
-                        help='ratio of validation batch size to training batch size (default: 1)')
-    parser.add_argument('--drop', type=float, default=0.0, metavar='PCT',
-                        help='Dropout rate (default: 0.)')
-    parser.add_argument('--drop-connect', type=float, default=None, metavar='PCT',
-                        help='Drop connect rate, DEPRECATED, use drop-path (default: None)')
-    parser.add_argument('--drop-path', type=float, default=None, metavar='PCT',
-                        help='Drop path rate (default: None)')
-    parser.add_argument('--drop-block', type=float, default=None, metavar='PCT',
-                        help='Drop block rate (default: None)')
-    parser.add_argument('--jsd', action='store_true', default=False,
-                        help='Enable Jensen-Shannon Divergence + CE loss. Use with `--aug-splits`.')
-
-    # Augmentation parameters
-    parser.add_argument('--color-jitter', type=float, default=0.4, metavar='PCT',
-                        help='Color jitter factor (default: 0.4)')
-    parser.add_argument('--aa', type=str, default='rand-m9-mstd0.5', metavar='NAME',
-                        help='Use AutoAugment policy. "v0" or "original". (default: None)'),
-    parser.add_argument('--aug-splits', type=int, default=0,
-                        help='Number of augmentation splits (default: 0, valid: 0 or >=2)')
-    parser.add_argument('--reprob', type=float, default=0.2, metavar='PCT',
-                        help='Random erase prob (default: 0.2)')
-    parser.add_argument('--remode', type=str, default='pixel',
-                        help='Random erase mode (default: "pixel")')
-    parser.add_argument('--recount', type=int, default=1,
-                        help='Random erase count (default: 1)')
-    parser.add_argument('--resplit', action='store_true', default=False,
-                        help='Do not random erase first (clean) augmentation split')
-    parser.add_argument('--mixup', type=float, default=0.0,
-                        help='mixup alpha, mixup enabled if > 0. (default: 0.)')
-    parser.add_argument('--mixup-off-epoch', default=0, type=int, metavar='N',
-                        help='turn off mixup after this epoch, disabled if 0 (default: 0)')
-    parser.add_argument('--smoothing', type=float, default=0.1,
-                        help='label smoothing (default: 0.1)')
-    parser.add_argument('--train-interpolation', type=str, default='random',
-                        help='Training interpolation (random, bilinear, bicubic default: "random")')
-    # Batch norm parameters (only works with gen_efficientnet based models currently)
-    parser.add_argument('--bn-tf', action='store_true', default=False,
-                        help='Use Tensorflow BatchNorm defaults for models that support it (default: False)')
-    parser.add_argument('--bn-momentum', type=float, default=None,
-                        help='BatchNorm momentum override (if not None)')
-    parser.add_argument('--bn-eps', type=float, default=None,
-                        help='BatchNorm epsilon override (if not None)')
-    parser.add_argument('--sync-bn', action='store_true',
-                        help='Enable NVIDIA Apex or Torch synchronized BatchNorm.')
-    parser.add_argument('--dist-bn', type=str, default='',
-                        help='Distribute BatchNorm stats between nodes after each epoch ("broadcast", "reduce", or "")')
-    parser.add_argument('--split-bn', action='store_true',
-                        help='Enable separate BN layers per augmentation split.')
-    # Misc
-    parser.add_argument('--seed', type=int, default=42, metavar='S',
-                        help='random seed (default: 42)')
-    parser.add_argument('--log-interval', type=int, default=50, metavar='N',
-                        help='how many batches to wait before logging training status')
-    parser.add_argument('--recovery-interval', type=int, default=0, metavar='N',
-                        help='how many batches to wait before writing recovery checkpoint')
-    parser.add_argument('-j', '--workers', type=int, default=16, metavar='N',
-                        help='how many training processes to use (default: 16)')
-    parser.add_argument('--num-gpu', type=int, default=1,
-                        help='Number of GPUS to use')
-    parser.add_argument('--save-images', action='store_true', default=False,
-                        help='save images of input bathes every log interval for debugging')
-    parser.add_argument('--amp', type=str2bool, nargs='?', const=True, default=True,
-                        help='use NVIDIA amp for mixed precision training')
-    parser.add_argument('--pin-mem', action='store_true', default=False,
-                        help='Pin CPU memory in DataLoader for more efficient (sometimes) transfer to GPU.')
-    parser.add_argument('--no-prefetcher', action='store_true', default=False,
-                        help='disable fast prefetcher')
-    parser.add_argument('--output', default='./outputs', type=str, metavar='PATH',
-                        help='path to output folder (default: none, current dir)')
-    parser.add_argument('--eval-metric', default='top1', type=str, metavar='EVAL_METRIC',
-                        help='Best metric (default: "top1"')
-    parser.add_argument('--tta', type=int, default=0, metavar='N',
-                        help='Test/inference time augmentation (oversampling) factor. 0=None (default: 0)')
-    parser.add_argument("--local_rank", default=0, type=int)
-    parser.add_argument('--nonstrict_checkpoint', type=str2bool, nargs='?', const=True, default=True,
-                        help='Ignore missmatch in size when loading model weights. Used for transfer learning')
-    parser.add_argument('--tensorboard', action='store_true', default=False,
-                        help='Write to TensorboardX')
-    parser.add_argument("--single-view", action='store_true', default=False,
-                        help="train only the fc layer")
-    parser.add_argument("--debug", action='store_true', default=False,
-                        help="logging is set to debug")
-    parser.add_argument("--train_percent", type=int, default=100,
-                        help="what percent of data to use for train (don't forget to leave out val")
-    parser.add_argument('--resnet_structure', type=int, nargs='+', default=[3, 4, 6, 3], metavar='resnetstruct',
-                        help='custom resnet structure')
-    parser.add_argument('--resnet_block', default='Bottleneck', type=str, metavar='block',
-                        help='custom resnet block')
-
-    parser.add_argument("--ema_KD", action='store_true', default=False, help="use KD from EMA")
-    parser.add_argument('--temperature_T', type=float, default=1,
-                        help='factor for temperature of the teacher')
-    parser.add_argument('--temperature_S', type=float, default=1,
-                        help='factor for temperature of the student')
-    parser.add_argument('--keep_only_correct', action='store_true', default=False,
-                        help='Hard threshold for training from example')
-    parser.add_argument('--only_kd', action='store_true', default=False,
-                        help='Hard threshold for training from example')
-    parser.add_argument('--verbose', action='store_true', default=False,
-                        help='Verbose mode')
-    parser.add_argument('--clip-grad', type=float, default=None, metavar='NORM',
-                        help='Clip gradient norm (default: None, no clipping)')
-    parser.add_argument('--channels-last', action='store_true', default=False,
-                        help='Use channels_last memory layout')
-    parser.add_argument('--apex-amp', action='store_true', default=False,
-                        help='Use NVIDIA Apex AMP mixed precision')
-    parser.add_argument('--native-amp', action='store_true', default=False,
-                        help='Use Native Torch AMP mixed precision')
+add_nas_to_parser(parser)
 
 
 def _parse_args():
     # Do we have a config file to parse?
-    init_parser(parser)
-    add_nas_to_parser(parser)
     args_config, remaining = config_parser.parse_known_args()
     if args_config.config:
         with open(args_config.config, 'r') as f:
@@ -242,23 +241,23 @@ def main():
     args.prefetcher = not args.no_prefetcher
     args.distributed = False
     writer = None
-    if 'WORLD_SIZE' in os.environ:
-        args.distributed = int(os.environ['WORLD_SIZE']) > 1
-        if args.distributed and args.num_gpu > 1:
-            logging.warning(
-                'Using more than one GPU per process in distributed mode is not allowed. Setting num_gpu to 1.')
-            args.num_gpu = 1
+    # if 'WORLD_SIZE' in os.environ:
+    #     args.distributed = int(os.environ['WORLD_SIZE']) > 1
+    #     if args.distributed and args.num_gpu > 1:
+    #         logging.warning(
+    #             'Using more than one GPU per process in distributed mode is not allowed. Setting num_gpu to 1.')
+    #         args.num_gpu = 1
 
     args.device = 'cuda:0'
     args.world_size = 1
     args.rank = 0  # global rank
-    if args.distributed:
-        args.num_gpu = 1
-        args.device = 'cuda:%d' % args.local_rank
-        torch.cuda.set_device(args.local_rank)
-        torch.distributed.init_process_group(backend='nccl', init_method='env://')
-        args.world_size = torch.distributed.get_world_size()
-        args.rank = torch.distributed.get_rank()
+    # if args.distributed:
+    #     args.num_gpu = 1
+    #     args.device = 'cuda:%d' % args.local_rank
+    #     torch.cuda.set_device(args.local_rank)
+    #     torch.distributed.init_process_group(backend='nccl', init_method='env://')
+    #     args.world_size = torch.distributed.get_world_size()
+    #     args.rank = torch.distributed.get_rank()
 
     assert args.rank >= 0
     DistributedManager.set_args(args)
@@ -272,24 +271,18 @@ def main():
 
     torch.manual_seed(args.seed + args.rank)
 
-    if os.path.exists(os.path.join(args.data, args.csv_file)):
-        dataset_train = CsvDataset(os.path.join(args.data, args.csv_file),
-                                   single_view=args.single_view, data_percent=args.train_percent)
-        dataset_eval = CsvDataset(os.path.join(args.data, args.csv_file),
-                                  single_view=True, data_percent=10, reverse_order=True)
-    else:
-        train_dir, eval_dir = get_train_val_dir(args.data)
-        dataset_train = Dataset(train_dir)
-        if args.train_percent < 100:
-            dataset_train, dataset_valid = dataset_train.split_dataset(
-                1.0 * args.train_percent / 100.0)
+    train_dir, eval_dir = get_train_val_dir(args.data)
+    dataset_train = Dataset(train_dir)
+    if args.train_percent < 100:
+        dataset_train, dataset_valid = dataset_train.split_dataset(
+            1.0 * args.train_percent / 100.0)
 
-        dataset_eval = Dataset(eval_dir)
-
+    dataset_eval = Dataset(eval_dir)
     logging.info(f'Training data has {len(dataset_train)} images')
     args.num_classes = len(dataset_train.class_to_idx)
     logging.info(f'setting num classes to {args.num_classes}')
     # exit()
+
     model = create_model(
         args.model,
         pretrained=args.pretrained,
@@ -372,22 +365,8 @@ def main():
         else:
             logging.warning("Native Torch AMP is not available, using float32.")
 
-    if args.num_gpu > 1:
-        if use_amp == 'apex':
-            logging.warning(
-                'Apex AMP does not work well with nn.DataParallel, disabling. Use DDP or Torch AMP.')
-            use_amp = None
-
-        model = nn.DataParallel(model, device_ids=list(range(args.num_gpu))).cuda()
-
-        assert not args.channels_last, "Channels last not supported with DP, use DDP."
-
-    else:
-        model.cuda()
-        model.train()
-        if args.channels_last:
-            model = model.to(memory_format=torch.channels_last)
-
+    if args.channels_last:
+        model = model.to(memory_format=torch.channels_last)
     model.cuda()
     model.train()
 
@@ -429,15 +408,15 @@ def main():
 
     amp_autocast = suppress  # do nothing
     loss_scaler = None
-    if use_amp == 'apex':
-        if optim is not None:
-            model, optim = amp.initialize(model, optim, opt_level='O1')
+    # if use_amp == 'apex':
+    #     if optim is not None:
+    #         model, optim = amp.initialize(model, optim, opt_level='O1')
+    #
+    #     loss_scaler = ApexScaler()
+    #     if args.local_rank == 0:
+    #         logging.info('Using NVIDIA APEX AMP. Training in mixed precision.')
 
-        loss_scaler = ApexScaler()
-        if args.local_rank == 0:
-            logging.info('Using NVIDIA APEX AMP. Training in mixed precision.')
-
-    elif use_amp == 'native':
+    if use_amp == 'native':
         amp_autocast = torch.cuda.amp.autocast
         loss_scaler = NativeScaler()
         if args.local_rank == 0:
@@ -462,35 +441,35 @@ def main():
     #
     # del resume_state
 
-    if args.distributed:
-        if args.sync_bn:
-            assert not args.split_bn
-            try:
-                if has_apex:
-                    model = convert_syncbn_model(model)
-                else:
-                    model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-                if args.local_rank == 0:
-                    logging.info(
-                        'Converted model to use Synchronized BatchNorm. WARNING: You may have issues if using '
-                        'zero initialized BN layers (enabled by default for ResNets) while sync-bn enabled.')
-
-            except Exception as e:
-                logging.error('Failed to enable Synchronized BatchNorm. Install Apex or Torch >= 1.1')
-
-        if has_apex and use_amp != 'native':
-            # Apex DDP preferred unless native amp is activated
-            if args.local_rank == 0:
-                logging.info("Using NVIDIA APEX DistributedDataParallel.")
-
-            model = ApexDDP(model, delay_allreduce=True)
-
-        else:
-            if args.local_rank == 0:
-                logging.info("Using native Torch DistributedDataParallel.")
-
-            # NOTE: EMA model does not need to be wrapped by DDP
-            model = NativeDDP(model, device_ids=[args.local_rank], find_unused_parameters=True)
+    # if args.distributed:
+    #     if args.sync_bn:
+    #         assert not args.split_bn
+    #         try:
+    #             if has_apex:
+    #                 model = convert_syncbn_model(model)
+    #             else:
+    #                 model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+    #             if args.local_rank == 0:
+    #                 logging.info(
+    #                     'Converted model to use Synchronized BatchNorm. WARNING: You may have issues if using '
+    #                     'zero initialized BN layers (enabled by default for ResNets) while sync-bn enabled.')
+    #
+    #         except Exception as e:
+    #             logging.error('Failed to enable Synchronized BatchNorm. Install Apex or Torch >= 1.1')
+    #
+    #     if has_apex and use_amp != 'native':
+    #         # Apex DDP preferred unless native amp is activated
+    #         if args.local_rank == 0:
+    #             logging.info("Using NVIDIA APEX DistributedDataParallel.")
+    #
+    #         model = ApexDDP(model, delay_allreduce=True)
+    #
+    #     else:
+    #         if args.local_rank == 0:
+    #             logging.info("Using native Torch DistributedDataParallel.")
+    #
+    #         # NOTE: EMA model does not need to be wrapped by DDP
+    #         model = NativeDDP(model, device_ids=[args.local_rank], find_unused_parameters=True)
 
     collate_fn = None
     if args.prefetcher and args.mixup > 0:
@@ -650,8 +629,8 @@ def main():
                 end.record()
                 torch.cuda.synchronize()
                 gpu_h_fw += start.elapsed_time(end) / 1e3 / 60 / 60
-                if not 'frank_wolfe' in args.nas_optimizer:
-                    update_alpha_beta_tensorboard(k, list_alphas, writer)
+                # if not 'frank_wolfe' in args.nas_optimizer:
+                #     update_alpha_beta_tensorboard(k, list_alphas, writer)
 
     except KeyboardInterrupt:
         interrupted = True

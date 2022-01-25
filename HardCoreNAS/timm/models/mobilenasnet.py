@@ -992,22 +992,22 @@ class MobileNasNet(MobileNetV3):
 
         for n, m in self.named_modules():
             if 'conv_dw' in n and isinstance(m, nn.Conv2d) and m.kernel_size[0] != self.dw_k_size[-1] and \
-                n.split('.')[
-                    -1] != 'conv_dw':
+                    n.split('.')[
+                        -1] != 'conv_dw':
                 m.requires_grad_(False)
             if 'bn2' in n and isinstance(m, nn.BatchNorm2d) and n.split('.')[-1] != 'bn2' and int(
-                n.split('.')[-1]) != len(self.dw_k_size) - 1:
+                    n.split('.')[-1]) != len(self.dw_k_size) - 1:
                 m.requires_grad_(False)
                 m.train(False)
 
             if 'bn3' in n and isinstance(m, nn.BatchNorm2d) and n.split('.')[-1] != 'bn3' and int(
-                n.split('.')[-1]) % len(self.se_ratio) != len(self.se_ratio) - 1:
+                    n.split('.')[-1]) % len(self.se_ratio) != len(self.se_ratio) - 1:
                 m.requires_grad_(False)
                 m.train(False)
 
             if self.use_dedicated_pwl_se:
                 if 'conv_pwl' in n and isinstance(m, nn.Conv2d) and n.split('.')[-1] != 'conv_pwl' and int(
-                    n.split('.')[-1]) != len(self.se_ratio) - 1:
+                        n.split('.')[-1]) != len(self.se_ratio) - 1:
                     m.requires_grad_(False)
 
     def set_only_kernel_training(self, also_last=True, afterwidth=True):
@@ -1019,7 +1019,7 @@ class MobileNasNet(MobileNetV3):
                 -1] != 'conv_dw':
                 m.requires_grad_(True)
             if 'bn2' in n and isinstance(m, nn.BatchNorm2d) and n.split('.')[-1] != 'bn2' and int(
-                n.split('.')[-1]) != len(self.dw_k_size) - 1:
+                    n.split('.')[-1]) != len(self.dw_k_size) - 1:
                 m.requires_grad_(True)
                 m.train(True)
 
@@ -1055,13 +1055,13 @@ class MobileNasNet(MobileNetV3):
                 m._alpha.requires_grad_(False)
 
             if 'bn3' in n and isinstance(m, nn.BatchNorm2d) and n.split('.')[-1] != 'bn3' and int(
-                n.split('.')[-1]) % len(self.se_ratio) != len(self.se_ratio) - 1:
+                    n.split('.')[-1]) % len(self.se_ratio) != len(self.se_ratio) - 1:
                 m.requires_grad_(False)
                 m.train(False)
 
             if self.use_dedicated_pwl_se:
                 if 'conv_pwl' in n and isinstance(m, nn.Conv2d) and n.split('.')[-1] != 'conv_pwl' and int(
-                    n.split('.')[-1]) != len(self.se_ratio) - 1:
+                        n.split('.')[-1]) != len(self.se_ratio) - 1:
                     m.requires_grad_(False)
 
         for p in self.beta:
@@ -1735,7 +1735,7 @@ def generate_latency_dict(model, file_name='lut.pkl', batch_size=1, iterations=2
             return dict_time
 
         for k, v in desc_blocks.items():
-                desc_blocks[k] = [dict_time[i] for i in v]
+            desc_blocks[k] = [dict_time[i] for i in v]
 
         desc_blocks['general'] = dict_time['general']
         return desc_blocks
@@ -1891,7 +1891,7 @@ def measure_time_openvino(model):
     torch.onnx.export(model=model.cpu(), args=dummy_input,
                       f=model_onnx,
                       input_names=['input'], output_names=['output'])  #
-    #TODO: Those commands are not for release
+    # TODO: Those commands are not for release
     command1 = 'python3 /mnt/workspace/ori/openvino/model-optimizer/mo.py --input_model   /mnt/workspace/yonathan/nas_niv/outputs/temp.onnx --output_dir /mnt/workspace/yonathan/nas_niv/outputs/'
     command2 = '/mnt/workspace/ori/openvino/bin-mkl/intel64/Release/benchmark_app -m /mnt/workspace/yonathan/nas_niv/outputs/temp.xml -niter 1000 -nstreams 1 -b 1'
     import subprocess
