@@ -4,6 +4,8 @@ import sys
 import time
 from contextlib import suppress
 from datetime import datetime
+
+import torch.cuda
 import yaml
 from torch.nn.parallel import DistributedDataParallel as NativeDDP
 from tqdm import tqdm
@@ -249,6 +251,8 @@ def main():
     #         args.num_gpu = 1
 
     args.device = 'cuda:0'
+    torch.device(args.device)
+    torch.cuda.set_device(args.device)
     args.world_size = 1
     args.rank = 0  # global rank
     # if args.distributed:
@@ -369,7 +373,8 @@ def main():
         model = model.to(memory_format=torch.channels_last)
     model.cuda()
     model.train()
-
+    time.sleep(50)
+    exit()
     optim = None
     list_alphas = None
     fixed_latency = 0
