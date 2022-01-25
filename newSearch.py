@@ -285,7 +285,7 @@ def main():
     logging.info(f'Training data has {len(dataset_train)} images')
     args.num_classes = len(dataset_train.class_to_idx)
     logging.info(f'setting num classes to {args.num_classes}')
-    exit()
+    # exit()
 
     model = create_model(
         args.model,
