@@ -54,6 +54,12 @@ class ClientRestService:
         app.run(host="0.0.0.0", port=self.port)
 
     def run_round(self, config):
+        """
+        Function to train the global model locally using local dataset, evaluate its performance and send the
+        statistics, trained model back to the reducer.
+        :param config: The hyperparameters for a given round.
+        :return:
+        """
         try:
             pre = time.time()
             print("Running round - ", config["round_id"], flush=True)

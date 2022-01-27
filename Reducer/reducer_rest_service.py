@@ -1,15 +1,16 @@
+import os
 import time
 import uuid
-import matplotlib.pyplot as plt
-import numpy as np
-from flask import Flask, jsonify, request
-import requests as r
-import threading
-import os
-from helper.pytorch_helper import PytorchHelper
 import json
 import logging
+import threading
+import numpy as np
+import requests as r
+import matplotlib.pyplot as plt
+from flask import Flask, jsonify, request
+from helper.pytorch_helper import PytorchHelper
 from torch.utils.tensorboard import SummaryWriter
+from concurrent.futures import ThreadPoolExecutor
 
 
 class Client:
@@ -26,12 +27,17 @@ class Client:
 
     def send_round_start_request(self, round_id, bucket_name, global_model, epochs):
         try:
-            retval = r.get(
-                "{}?round_id={}&bucket_name={}&global_model={}&epochs={}".format(self.connect_string + '/startround',
-                                                                                 round_id, bucket_name, global_model,
-                                                                                 epochs))
-            if retval.json()['status'] == "started":
-                return True
+            for i in range(3):
+                retval = r.get(
+                    "{}?round_id={}&bucket_name={}&global_model={}&epochs={}".format(
+                        self.connect_string + '/startround',
+                        round_id, bucket_name, global_model,
+                        epochs))
+                if retval.json()['status'] == "started":
+                    self.status = "Training"
+                    return True
+                else:
+                    time.sleep(5)
             return False
         except Exception as e:
             print("Error while send_round_start_request ", e, flush=True)
@@ -39,9 +45,12 @@ class Client:
 
     def send_round_stop_request(self):
         try:
-            retval = r.get("{}".format(self.connect_string + '/stopround'))
-            if retval.json()['status'] == "stopping":
-                return True
+            for i in range(3):
+                retval = r.get("{}".format(self.connect_string + '/stopround'))
+                if retval.json()['status'] == "stopping":
+                    return True
+                else:
+                    time.sleep(5)
             return False
         except Exception as e:
             print("Error while send_round_stop_request ", e, flush=True)
@@ -54,8 +63,20 @@ class Client:
         return time.time() - self.last_checked
 
 
-class ReducerRestService:
+def remove_pending_jobs(pending_jobs):
+    """
+    Method for removing the completed jobs from the list of pending jobs
+    :param pending_jobs: Incomplete jobs.
+    :return: List containing pending jobs.
+    """
+    temp = []
+    for job in pending_jobs:
+        if not job.done():
+            temp.append(job)
+    return temp
 
+
+class ReducerRestService:
     def __init__(self, minio_client, config):
         self.minio_client = minio_client
         self.port = config['flask_port']
@@ -70,6 +91,10 @@ class ReducerRestService:
         threading.Thread(target=self.remove_disconnected_clients, daemon=True).start()
 
     def remove_disconnected_clients(self):
+        """
+        Methds for removing unresponsive clients from the list of connected clients.
+        :return:
+        """
         while True:
             self.clients = {client: self.clients[client] for client in self.clients if
                             self.clients[client].get_last_checked() < 50}
@@ -77,18 +102,26 @@ class ReducerRestService:
             time.sleep(30)
 
     def stop_training(self):
+        """
+        Method for stopping the training across all the clients upon admin request.
+        :return:
+        """
+        executor = ThreadPoolExecutor(max_workers=10)
+        pending_jobs = []
         for _, client in self.clients.items():
             if client.status == "Idle":
                 continue
-            for i in range(3):
-                if client.send_round_stop_request():
-                    break
-                else:
-                    time.sleep(5)
+            pending_jobs.append(
+                executor.submit(client.send_round_stop_request))
+        while len(pending_jobs) > 0:
+            print("Sending round stop requests to the clients")
+            pending_jobs = remove_pending_jobs(pending_jobs)
+            time.sleep(5)
         self.stop_training_event.set()
         self.training.join()
-        self.status = "Idle"
+        assert self.get_clients_training() == 0
         self.rounds -= 1
+        self.status = "Idle"
 
     def run(self):
         log = logging.getLogger('werkzeug')
@@ -118,6 +151,8 @@ class ReducerRestService:
 
         @app.route('/training')
         def start_training():
+            if self.status != "Idle":
+                return jsonify({"status": "Training already running!!"})
             config = {
                 "rounds": int(request.args.get('rounds', '1')),
                 "round_time": int(request.args.get('round_time', '200')),
@@ -222,7 +257,23 @@ class ReducerRestService:
 
         app.run(host="0.0.0.0", port=self.port)
 
+    def get_clients_training(self):
+        """
+        Method for getting the count of clients in training state.
+        :return: Count of clients in training state.
+        """
+        client_training = 0
+        for _, client in self.clients.items():
+            if client.status == "Training":
+                client_training += 1
+        return client_training
+
     def train(self, config):
+        """
+        Method for running the training on the connected clients as per the config set by the API call and save the final model in the minio.
+        :param config: Various hyperparameters for tuning the federated learning.
+        :return:
+        """
         for i in range(config["rounds"]):
             self.rounds += 1
             bucket_name = "round" + str(self.rounds)
@@ -233,19 +284,20 @@ class ReducerRestService:
                 self.minio_client.make_bucket(bucket_name)
 
             self.clients_updated = len(self.clients)
+            executor = ThreadPoolExecutor(max_workers=10)
+            pending_jobs = []
             for _, client in self.clients.items():
-                for i in range(3):
-                    if client.send_round_start_request(self.rounds, bucket_name, self.global_model, config["epochs"]):
-                        client.status = "Training"
-                        break
-                    else:
-                        time.sleep(5)
+                pending_jobs.append(
+                    executor.submit(client.send_round_start_request, self.rounds, bucket_name, self.global_model,
+                                    config["epochs"]))
+            while len(pending_jobs) > 0:
+                print("Sending round start requests to the clients")
+                pending_jobs = remove_pending_jobs(pending_jobs)
+                time.sleep(5)
+            total_clients_started_training = self.get_clients_training()
             round_time = 0
             while True:
-                client_training = 0
-                for _, client in self.clients.items():
-                    if client.status == "Training":
-                        client_training += 1
+                client_training = self.get_clients_training()
                 print("Clients in Training : " + str(client_training), flush=True)
                 if client_training == 0 or round_time > config["round_time"]:
                     break
@@ -266,7 +318,8 @@ class ReducerRestService:
                 if processed_model == 0:
                     model = helper.get_tensor_diff(helper.load_model(obj.object_name), base_model)
                 else:
-                    model = helper.increment_average(model, helper.get_tensor_diff(helper.load_model(obj.object_name), base_model),
+                    model = helper.increment_average(model, helper.get_tensor_diff(helper.load_model(obj.object_name),
+                                                                                   base_model),
                                                      processed_model + 1)
                 processed_model += 1
                 os.remove(obj.object_name)

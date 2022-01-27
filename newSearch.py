@@ -18,7 +18,7 @@ from HardCoreNAS.nas.src.optim.block_frank_wolfe import flatten_attention_latenc
 from HardCoreNAS.timm import create_model
 from HardCoreNAS.timm.data import Dataset, CsvDataset, create_loader, FastCollateMixup, resolve_data_config
 from HardCoreNAS.timm.loss import LabelSmoothingCrossEntropy, SoftTargetCrossEntropy, JsdCrossEntropy
-from HardCoreNAS.timm.models import resume_checkpoint, convert_splitbn_model
+from HardCoreNAS.timm.models import resume_checkpoint, convert_splitbn_model, load_checkpoint
 from HardCoreNAS.timm.models.mobilenasnet import transform_model_to_mobilenet, measure_time
 from HardCoreNAS.timm.optim import create_optimizer_alpha
 from HardCoreNAS.timm.utils import *
@@ -187,8 +187,6 @@ parser.add_argument('--apex-amp', action='store_true', default=False,
 parser.add_argument('--native-amp', action='store_true', default=False,
                     help='Use Native Torch AMP mixed precision')
 
-
-
 add_nas_to_parser(parser)
 
 
@@ -316,6 +314,7 @@ def main():
         no_swish=args.no_swish,
         search_mode=True
     )
+    load_checkpoint(model, "data/clients/w_heaviest_d89ee05d.pth")
     if args.force_se and 'mobilenasnet' in args.model:
         model.set_force_se(True)
 
@@ -348,7 +347,6 @@ def main():
     if args.local_rank == 0:
         logging.info('Model %s created, param count: %d' %
                      (args.model, sum([m.numel() for m in model.parameters()])))
-
     data_config = resolve_data_config(vars(args), model=model, verbose=False)
     model.eval()
 
@@ -578,11 +576,11 @@ def main():
             else:
                 optim.bc_qp_init()
 
-            alpha_attention_vec, _, _, alpha_blocks, beta_attention_vec, _, beta_blocks = \
-                flatten_attention_latency_grad_alpha_beta_blocks(list_alphas)
-            check_rounding_constraint(optim2 if optim2 is not None else optim,
-                                      alpha_attention_vec, beta_attention_vec, alpha_blocks, beta_blocks)
-
+            # alpha_attention_vec, _, _, alpha_blocks, beta_attention_vec, _, beta_blocks = \
+            #     flatten_attention_latency_grad_alpha_beta_blocks(list_alphas)
+            # check_rounding_constraint(optim2 if optim2 is not None else optim,
+            #                           alpha_attention_vec, beta_attention_vec, alpha_blocks, beta_blocks)
+        exit()
         epoch = 0
         _ = optim.set_epoch(0) if hasattr(optim, 'set_epoch') else None
         _ = optim.set_writer(writer) if hasattr(optim, 'set_writer') else None
@@ -594,9 +592,9 @@ def main():
         gpu_h_agg = torch.zeros(1).cuda()
         gpu_h_fw = torch.zeros(1).cuda()
         for k in bar:
-            model.temperature = calculate_temperature(k, T0=args.init_temperature, Tf=args.final_temperature,
-                                                      tf=args.temperature_annealing_period * args.bcfw_steps,
-                                                      policy=args.annealing_policy)
+            # model.temperature = calculate_temperature(k, T0=args.init_temperature, Tf=args.final_temperature,
+            #                                           tf=args.temperature_annealing_period * args.bcfw_steps,
+            #                                           policy=args.annealing_policy)
             if writer is not None:
                 writer.add_scalar('Temperature', model.temperature, k)
 
@@ -730,15 +728,15 @@ def main():
     model.eval()
     child_model.eval()
 
-    print(f"Computing latency for {string_model}")
-    unwrapped_model = model if hasattr(model, 'extract_expected_latency') else model.module
-    latency_predicted = unwrapped_model.extract_expected_latency(file_name=args.lut_filename,
-                                                                 batch_size=args.lut_measure_batch_size,
-                                                                 repeat_measure=args.repeat_measure,
-                                                                 target_device=args.target_device)
-    latency_measured = measure_time(child_model)
-    diff = latency_measured - latency_predicted
-    print(f"Latency_predicted={latency_predicted}, latency_measured={latency_measured}, diff={diff}")
+    # print(f"Computing latency for {string_model}")
+    # unwrapped_model = model if hasattr(model, 'extract_expected_latency') else model.module
+    # latency_predicted = unwrapped_model.extract_expected_latency(file_name=args.lut_filename,
+    #                                                              batch_size=args.lut_measure_batch_size,
+    #                                                              repeat_measure=args.repeat_measure,
+    #                                                              target_device=args.target_device)
+    # latency_measured = measure_time(child_model)
+    # diff = latency_measured - latency_predicted
+    # print(f"Latency_predicted={latency_predicted}, latency_measured={latency_measured}, diff={diff}")
 
 
 def calculate_temperature(t, T0, Tf, tf, policy):
