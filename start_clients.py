@@ -3,6 +3,7 @@ import threading
 import time
 import yaml
 import subprocess
+from multiprocessing import Process
 
 
 def run_container(cmd):
@@ -44,15 +45,15 @@ def start_clients_docker():
 def start_clients():
     try:
         available_gpus = ["cuda:0", "cuda:0"]
-        for i in range(1, 3):
+        for i in range(1, 2):
             with open("settings/settings-client.yaml", 'r') as file:
                 config = dict(yaml.safe_load(file))
-            config["training"]["cuda_device"] = available_gpus[i-1]
+            config["training"]["cuda_device"] = available_gpus[i - 1]
             config["training"]["directory"] = "data/clients/" + str(i) + "/"
             with open("settings/settings-client.yaml", 'w') as f:
                 yaml.dump(config, f)
-            threading.Thread(target=run_container,
-                             args=("python Client/client.py >> data/clients/" + str(i) + "/log.txt",), daemon=True).start()
+            Process(target=run_container,
+                    args=("python Client/client.py >> data/clients/" + str(i) + "/log.txt",), daemon=True).start()
             time.sleep(3)
     except Exception as e:
         print(e)

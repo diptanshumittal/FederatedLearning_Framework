@@ -5,7 +5,7 @@ import os
 from minio import Minio
 import io
 import json
-from model.pytorch_models import create_seed_model
+from model.pytorch.pytorch_models import create_seed_model
 from model.pytorch_model_trainer import weights_to_np
 
 with open("../settings/settings-reducer.yaml", 'r') as file:

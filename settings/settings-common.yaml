@@ -1,7 +1,13 @@
 model:
-  loss: nllloss
+  learning_rate: 0.1
+  loss: cross_entropy
+  mode: initialization
   model_type: mnist
-  optimizer: adam
+  momentum: 0.9
+  optimizer: SFW
+  ord: 2
+  rescale: gradient
+  value: 10
 storage:
   storage_config:
     storage_access_key: minioadmin

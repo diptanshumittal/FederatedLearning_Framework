@@ -5,13 +5,13 @@ import io
 import yaml
 import json
 import socket
-import threading
 import subprocess
 from minio import Minio
 from contextlib import closing
-from helper.pytorch_helper import PytorchHelper
+from multiprocessing import Process
+from helper.pytorch.pytorch_helper import PytorchHelper
 from model.pytorch_model_trainer import weights_to_np
-from model.pytorch_models import create_seed_model
+from model.pytorch.pytorch_models import create_seed_model
 from Reducer.reducer_rest_service import ReducerRestService
 
 
@@ -56,7 +56,7 @@ class Reducer:
 
         if not os.path.exists(fedn_config["tensorboard"]["path"]):
             os.mkdir(fedn_config["tensorboard"]["path"])
-        threading.Thread(target=run_tensorboard, args=(fedn_config["tensorboard"],), daemon=True).start()
+        Process(target=run_tensorboard, args=(fedn_config["tensorboard"],), daemon=True).start()
         try:
             if not os.path.exists(os.getcwd() + '/data/reducer'):
                 os.mkdir(os.getcwd() + '/data/reducer')

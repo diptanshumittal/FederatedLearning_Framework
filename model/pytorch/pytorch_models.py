@@ -3,9 +3,10 @@ import torch
 from HardCoreNAS.timm import create_model, create_optimizer
 import torch.nn.functional as F
 import argparse
+from helper.pytorch.optimizers import SFW
+from helper.pytorch.constraints import *
 
 
-# Create an initial CNN Model
 def create_seed_model(config):
     if config["model_type"] == "mnist":
         model = Net()
@@ -13,22 +14,26 @@ def create_seed_model(config):
         model = Net()
     else:
         model = Net()
-    if config["loss"] == "nllloss":
+    if config["loss"] == "neg_log_likelihood":
         loss = nn.NLLLoss()
-    elif config["loss"] == "nllloss":
-        loss = nn.NLLLoss()
+    elif config["loss"] == "cross_entropy":
+        loss = nn.CrossEntropyLoss()
     else:
         loss = nn.NLLLoss()
-    if config["optimizer"] == "adam":
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    if config["optimizer"] == "SFW":
+        constraints = create_lp_constraints(model, ord=float(config["ord"]), value=int(config["value"]),
+                                            mode=config["mode"])
+        optimizer = SFW(model.parameters(), constraints=constraints, learning_rate=float(config["learning_rate"]),
+                        momentum=float(config["momentum"]), rescale=config["rescale"])
+        make_feasible(model, constraints)
     elif config["optimizer"] == "adam":
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     else:
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)    
+        optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
     return model, loss, optimizer
 
 
-def create_NASglobal_model(num_classes=10):
+def create_nas_global_model(num_classes=10):
     model_name = 'mobilenasnet'
 
     model = create_model(

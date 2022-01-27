@@ -8,7 +8,7 @@ import numpy as np
 import requests as r
 import matplotlib.pyplot as plt
 from flask import Flask, jsonify, request
-from helper.pytorch_helper import PytorchHelper
+from helper.pytorch.pytorch_helper import PytorchHelper
 from torch.utils.tensorboard import SummaryWriter
 from concurrent.futures import ThreadPoolExecutor
 

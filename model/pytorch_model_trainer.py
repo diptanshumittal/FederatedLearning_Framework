@@ -1,12 +1,14 @@
-import collections
-import threading
-
-from model.pytorch_models import create_seed_model, create_NASglobal_model
-import torch
-from helper.pytorch_helper import PytorchHelper
-from torch.utils.data import DataLoader
 import os
-import time
+import sys
+
+sys.path.append(os.getcwd())
+import yaml
+import torch
+import threading
+import collections
+from torch.utils.data import DataLoader
+from helper.pytorch.pytorch_helper import PytorchHelper
+from model.pytorch.pytorch_models import create_seed_model
 
 
 def weights_to_np(weights):
@@ -36,6 +38,7 @@ class PytorchModelTrainer:
         # os.environ['CUDA_VISIBLE_DEVICES'] = config["cuda_device"]
         # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.device = torch.device(config["cuda_device"])
+        self.loss = self.loss.to(self.device)
         print("Device being used for training :", self.device, flush=True)
         self.train_loader = DataLoader(self.helper.read_data(config["dataset"], config["data_path"], True),
                                        batch_size=int(config['batch_size']), shuffle=True)
@@ -50,18 +53,11 @@ class PytorchModelTrainer:
             for x, y in dataloader:
                 if self.stop_event.is_set():
                     return float(0), float(0)
-                if self.trainer_type == "model_training":
-                    x, y = x.to(self.device), y.to(self.device)
-                    output = self.model(x)
-                    train_loss += 32 * self.loss(output, y).item()
-                    pred = output.argmax(dim=1, keepdim=True)
-                    train_correct += pred.eq(y.view_as(pred)).sum().item()
-                elif self.trainer_type == "nas":
-                    x, y = x.to(self.device), y.to(self.device)
-                    output = self.model(x)
-                    train_loss += 32 * self.loss(output, y).item()
-                    pred = output.argmax(dim=1, keepdim=True)
-                    train_correct += pred.eq(y.view_as(pred)).sum().item()
+                x, y = x.to(self.device), y.to(self.device)
+                output = self.model(x)
+                train_loss += 32 * self.loss(output, y).item()
+                pred = output.argmax(dim=1, keepdim=True)
+                train_correct += pred.eq(y.view_as(pred)).sum().item()
             train_loss /= len(dataloader.dataset)
             train_acc = train_correct / len(dataloader.dataset)
         return float(train_loss), float(train_acc)
@@ -91,20 +87,12 @@ class PytorchModelTrainer:
             for x, y in self.train_loader:
                 if self.stop_event.is_set():
                     return
-                if self.trainer_type == "model_training":
-                    x, y = x.to(self.device), y.to(self.device)
-                    self.optimizer.zero_grad()
-                    output = self.model(x)
-                    error = self.loss(output, y)
-                    error.backward()
-                    self.optimizer.step()
-                elif self.trainer_type == "nas":
-                    x, y = x.to(self.device), y.to(self.device)
-                    self.optimizer.zero_grad()
-                    output = self.model(x)
-                    error = self.loss(output, y)
-                    error.backward()
-                    self.optimizer.step()
+                x, y = x.to(self.device), y.to(self.device)
+                self.optimizer.zero_grad()
+                output = self.model(x)
+                error = self.loss(output, y)
+                error.backward()
+                self.optimizer.step()
         print("-- TRAINING COMPLETED --", flush=True)
 
     def start_round(self, round_config, stop_event):
@@ -120,3 +108,28 @@ class PytorchModelTrainer:
         except Exception as e:
             print(e)
             return {}
+
+
+if __name__ == "__main__":
+    with open(os.getcwd() + '/settings/settings-client.yaml', 'r') as file:
+        try:
+            fedn_config = dict(yaml.safe_load(file))
+        except yaml.YAMLError as e:
+            print('Failed to read config from settings file, exiting.', flush=True)
+            exit()
+    with open(os.getcwd() + '/settings/settings-common.yaml', 'r') as file:
+        try:
+            common_config = dict(yaml.safe_load(file))
+        except yaml.YAMLError as e:
+            print('Failed to read model_config from settings file', flush=True)
+            raise e
+    print("Setting files loaded successfully !!!")
+    fedn_config["training"]["model"] = common_config["model"]
+    fedn_config["training"]["data_path"] = fedn_config["training"]["directory"] + "mnist.npz"
+    fedn_config["training"]["global_model_path"] = fedn_config["training"]["directory"] + "weights.npz"
+    model_trainer = PytorchModelTrainer(fedn_config["training"])
+    model_trainer.model.to(model_trainer.device)
+    stop_round_event = threading.Event()
+    model_trainer.stop_event = stop_round_event
+    model_trainer.train({"epochs": 100})
+    print(model_trainer.validate())
