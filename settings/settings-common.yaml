@@ -7,11 +7,11 @@ model:
   optimizer: SFW
   ord: 2
   rescale: gradient
-  value: 10
+  value: 30
 storage:
   storage_config:
     storage_access_key: minioadmin
-    storage_hostname: 192.168.1.12
+    storage_hostname: 10.0.0.29
     storage_port: 9000
     storage_secret_key: minioadmin
     storage_secure_mode: false

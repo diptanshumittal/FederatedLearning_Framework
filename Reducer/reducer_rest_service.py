@@ -298,7 +298,8 @@ class ReducerRestService:
             round_time = 0
             while True:
                 client_training = self.get_clients_training()
-                print("Clients in Training : " + str(client_training), flush=True)
+                if (round_time%10) == 0:
+                    print("Clients in Training : " + str(client_training), flush=True)
                 if client_training == 0 or round_time > config["round_time"]:
                     break
                 round_time += 1

@@ -4,13 +4,14 @@ import numpy as np
 from math import floor
 
 
-def splitset(dataset, parts):
+def splitset(key, dataset, parts):
     """Partition data into "parts" partitions"""
     n = dataset.shape[0]
     local_n = floor(n / parts)
-    print(dataset.shape)
+    print(key)
+    print("Original shape : ",dataset.shape)
     arr = np.array(np.split(dataset, parts))
-    print(arr.shape)
+    print("Splitted shape : ",arr.shape)
     result = []
     for i in range(parts):
         result.append(dataset[i * local_n: (i + 1) * local_n])
@@ -24,19 +25,30 @@ if __name__ == '__main__':
     else:
         nr_of_datasets = int(sys.argv[1])
 
-    package = np.load("../data/mnist.npz")
+    print(os.getcwd())
+    package = np.load(os.getcwd()+"/data/mnist.npz")
+    
     data = {}
+
+    def unison_shuffled_copies(a, b):
+        assert len(a) == len(b)
+        p = np.random.permutation(len(a))
+        return a[p], b[p]
     for key, val in package.items():
-        data[key] = splitset(val, nr_of_datasets)
-
+        data[key] = val
+    data["x_test"], data["y_test"] = unison_shuffled_copies(data["x_test"], data["y_test"])
+    data["x_train"], data["y_train"] = unison_shuffled_copies(data["x_train"], data["y_train"])
     print("CREATING {} PARTITIONS INSIDE {}/data/clients".format(nr_of_datasets, os.getcwd()))
-    if not os.path.exists('../data/clients'):
-        os.mkdir('../data/clients')
+    for key, val in data.items():
+        data[key] = splitset(key, val, nr_of_datasets)
 
+    
+    if not os.path.exists(os.getcwd()+'/data/clients'):
+        os.mkdir(os.getcwd()+'/data/clients')
     for i in range(nr_of_datasets):
         if not os.path.exists('data/clients/{}'.format(str(i+1))):
             os.mkdir('data/clients/{}'.format(str(i+1)))
-        print(data['x_train'][i].shape)
+        
         np.savez('data/clients/{}'.format(str(i+1)) + '/mnist.npz',
                  x_train=data['x_train'][i],
                  y_train=data['y_train'][i],
