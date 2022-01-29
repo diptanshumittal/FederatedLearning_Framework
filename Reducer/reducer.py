@@ -19,6 +19,8 @@ def find_free_port():
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind(('', 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # subprocess.call("fuser -k 7000/tcp", shell=True)
+        # return 7000
         return str(s.getsockname()[1])
 
 

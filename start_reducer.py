@@ -6,6 +6,7 @@ import threading
 import subprocess
 from multiprocessing import Process
 from datetime import datetime
+from webbrowser import get
 import yaml
 
 
@@ -38,18 +39,19 @@ def start_reducer():
     with open(output_file, 'w') as fp:
         pass
     Process(target=run_container,
-            args=("./minio server minio_data/ --console-address \":9001\" >> "+output_file,),
+            args=("./minio server minio_data/ --console-address \":9001\"",),
             daemon=True).start()
     time.sleep(5)
     with open("settings/settings-common.yaml", 'r') as file:
         config = dict(yaml.safe_load(file))
     config["storage"]["storage_config"]["storage_hostname"] = get_local_ip()
+    print(get_local_ip())
     with open("settings/settings-common.yaml", 'w') as f:
         yaml.dump(config, f)
     output_file = "data/reducer/log"+str(datetime.now())+".txt"
     with open(output_file, 'w') as fp:
         pass
-    Process(target=run_container, args=("python Reducer/reducer.py >> "+output_file,),
+    Process(target=run_container, args=("python Reducer/reducer.py",),
             daemon=True).start()
     time.sleep(5)
 

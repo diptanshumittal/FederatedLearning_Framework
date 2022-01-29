@@ -125,7 +125,7 @@ class ReducerRestService:
 
     def run(self):
         log = logging.getLogger('werkzeug')
-        log.setLevel(logging.ERROR)
+        # log.setLevel(logging.ERROR)
         app = Flask(__name__)
 
         @app.route('/')
