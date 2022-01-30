@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 
@@ -13,6 +14,15 @@ from minio import Minio
 from contextlib import closing
 from Client.client_rest_service import ClientRestService
 from model.pytorch_model_trainer import PytorchModelTrainer
+
+parser = argparse.ArgumentParser(description='Federated Learning Client')
+parser.add_argument('--gpu', default='None', type=str,
+                    help='GPU device to be used by the client')
+parser.add_argument('--client_id', default='1', type=str, help='Client_id used for accessing dataset and saving logs')
+
+args = parser.parse_args()
+
+print(args)
 
 
 def find_free_port():
@@ -94,10 +104,10 @@ class Server:
 
 
 class Client:
-    def __init__(self, settings_path):
-        with open(settings_path, 'r') as file:
+    def __init__(self, args):
+        with open("settings/settings-client.yaml", 'r') as file:
             try:
-                fedn_config = dict(yaml.safe_load(file))
+                client_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
                 print('Failed to read config from settings file, exiting.', flush=True)
                 exit()
@@ -107,15 +117,34 @@ class Client:
             except yaml.YAMLError as e:
                 print('Failed to read model_config from settings file', flush=True)
                 raise e
+        self.training_id = common_config["model"]["model_type"] + "_" + common_config["training_identifier"]["id"]
+        if not os.path.exists(os.getcwd() + "/data/logs"):
+            os.mkdir(os.getcwd() + "/data/logs")
+        if not os.path.exists(os.getcwd() + "/data/logs/" + self.training_id):
+            os.mkdir(os.getcwd() + "/data/logs/" + self.training_id)
+        sys.stdout = open(os.getcwd() + "/data/logs/" + self.training_id + "/client_" + args.client_id + ".txt", "w")
         print("Setting files loaded successfully !!!")
-        fedn_config["training"]["model"] = common_config["model"]
-        fedn_config["client"] = {
+        client_config["training"] = common_config["training"]
+        client_config["training"]["model"] = common_config["model"]
+        client_config["client"] = {
             "hostname": get_local_ip(),
             "port": find_free_port()
         }
-        fedn_config["training"]["data_path"] = fedn_config["training"]["directory"] + "mnist.npz"
-        fedn_config["training"]["global_model_path"] = fedn_config["training"]["directory"] + "weights.npz"
-
+        if args.gpu != "None":
+            client_config["training"]["cuda_device"] = args.gpu
+        elif hasattr(os.environ, "CUDA_VISIBLE_DEVICES"):
+            if isinstance(os.environ["CUDA_VISIBLE_DEVICES"], list):
+                client_config["training"]["cuda_device"] = "cuda:" + str(os.environ["CUDA_VISIBLE_DEVICES"][0])
+            elif isinstance(os.environ["CUDA_VISIBLE_DEVICES"], str):
+                client_config["training"]["cuda_device"] = "cuda:" + os.environ["CUDA_VISIBLE_DEVICES"]
+            else:
+                print(os.environ["CUDA_VISIBLE_DEVICES"])
+        else:
+            raise ValueError("GPU device not set!!")
+        client_config["training"]["directory"] = "data/clients/" + args.client_id + "/"
+        client_config["training"]["data_path"] = client_config["training"]["directory"] + "data.npz"
+        client_config["training"]["global_model_path"] = client_config["training"]["directory"] + "weights.npz"
+        print(client_config)
         try:
             storage_config = common_config["storage"]
             assert (storage_config["storage_type"] == "S3")
@@ -130,36 +159,37 @@ class Client:
             print("Error while setting up minio configuration")
             exit()
         print("Minio client connected successfully !!!")
-
+        response = None
         try:
             response = self.minio_client.get_object('fedn-context', "reducer_config.txt")
-            fedn_config["reducer"] = json.loads(response.data)["reducer"]
+            client_config["reducer"] = json.loads(response.data)["reducer"]
         except Exception as e:
             print("Error in loading reducer_config file from minio", e)
             exit()
         finally:
-            response.close()
-            response.release_conn()
+            if response is not None:
+                response.close()
+                response.release_conn()
         try:
-            self.model_trainer = PytorchModelTrainer(fedn_config["training"])
+            self.model_trainer = PytorchModelTrainer(client_config["training"])
         except Exception as e:
             print("Error in model trainer setup ", e)
             exit()
         print("Model Trainer setup successful!!!")
 
         try:
-            self.id = fedn_config["client"]["hostname"] + ":" + str(fedn_config["client"]["port"])
-            self.client_config = fedn_config["client"]
-            self.server = Server(fedn_config["reducer"]["hostname"], fedn_config["reducer"]["port"], self.id)
-            if not self.server.connect_with_server(fedn_config["client"]):
+            self.id = client_config["client"]["hostname"] + ":" + str(client_config["client"]["port"])
+            self.client_config = client_config["client"]
+            self.server = Server(client_config["reducer"]["hostname"], client_config["reducer"]["port"], self.id)
+            if not self.server.connect_with_server(client_config["client"]):
                 print("here")
                 raise
             config = {
                 "server": self.server,
                 "minio_client": self.minio_client,
                 "model_trainer": self.model_trainer,
-                "flask_port": fedn_config["client"]["port"],
-                "global_model_path": fedn_config["training"]["global_model_path"]
+                "flask_port": client_config["client"]["port"],
+                "global_model_path": client_config["training"]["global_model_path"]
             }
             self.rest = ClientRestService(config)
         except Exception as e:
@@ -196,9 +226,7 @@ if __name__ == "__main__":
         exit()
     # print(torch.__version__, flush=True)
     try:
-        if len(sys.argv) == 1:
-            sys.argv.append(os.getcwd() + "/settings/settings-client.yaml")
-        client = Client(sys.argv[1])
+        client = Client(args)
         client.run()
     except Exception as e:
         print(e, flush=True)

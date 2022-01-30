@@ -5,6 +5,7 @@ import torch.nn.functional as F
 import argparse
 from helper.pytorch.optimizers import SFW
 from helper.pytorch.constraints import *
+import model.pytorch.resnet as resnet
 
 
 def create_seed_model(config):
@@ -12,6 +13,8 @@ def create_seed_model(config):
         model = Net()
     elif config["model_type"] == "mnist":
         model = Net()
+    elif config["model_type"] == "resnet20":
+        model = resnet.resnet20()
     else:
         model = Net()
     if config["loss"] == "neg_log_likelihood":

@@ -1,5 +1,7 @@
 import os
 import sys
+import time
+
 sys.path.append(os.getcwd())
 import io
 import yaml
@@ -19,9 +21,10 @@ def find_free_port():
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind(('', 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        # subprocess.call("fuser -k 7000/tcp", shell=True)
-        # return 7000
-        return str(s.getsockname()[1])
+        subprocess.call("fuser -k 7000/tcp", shell=True)
+        time.sleep(2)
+        return 7000
+        # return str(s.getsockname()[1])
 
 
 def get_local_ip():
@@ -34,6 +37,7 @@ def get_local_ip():
 
 def run_tensorboard(config):
     subprocess.call("fuser -k " + str(config["port"]) + "/tcp", shell=True)
+    time.sleep(2)
     cmd = "tensorboard --host 0.0.0.0 --logdir=" + config["path"] + " --port " + str(config["port"])
     subprocess.call(cmd, shell=True)
 
@@ -41,18 +45,25 @@ def run_tensorboard(config):
 class Reducer:
     def __init__(self):
         """ """
-        with open(os.getcwd() + '/settings/settings-reducer.yaml', 'r') as file:
+        with open(os.getcwd() + "/settings/settings-reducer.yaml", 'r') as file:
             try:
                 fedn_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
                 print('Failed to read config from settings file, exiting.', flush=True)
                 raise e
-        with open(os.getcwd() + '/settings/settings-common.yaml', 'r') as file:
+        with open(os.getcwd() + "/settings/settings-common.yaml", 'r') as file:
             try:
                 common_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
                 print('Failed to read model_config from settings file', flush=True)
                 raise e
+        self.training_id = common_config["training"]["dataset"] + "_" + common_config["model"]["model_type"] + "_" + \
+                           common_config["model"]["optimizer"] + "_" + common_config["training_identifier"]["id"]
+        if not os.path.exists(os.getcwd() + "/data/logs"):
+            os.mkdir(os.getcwd() + "/data/logs")
+        if not os.path.exists(os.getcwd() + "/data/logs/" + self.training_id):
+            os.mkdir(os.getcwd() + "/data/logs/" + self.training_id)
+        sys.stdout = open(os.getcwd() + "/data/logs/" + self.training_id + "/reducer.txt", "w")
         self.buckets = ["fedn-context"]
         self.port = find_free_port()
 
@@ -98,7 +109,8 @@ class Reducer:
         config = {
             "flask_port": self.port,
             "global_model": self.global_model,
-            "tensorboard_path": fedn_config["tensorboard"]["path"]
+            "tensorboard_path": fedn_config["tensorboard"]["path"],
+            "training_id": self.training_id
         }
         self.rest = ReducerRestService(self.minio_client, config)
 

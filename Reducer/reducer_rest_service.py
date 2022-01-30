@@ -20,10 +20,10 @@ class Client:
         self.status = "Idle"
         self.connect_string = "http://{}:{}".format(self.name, self.port)
         self.last_checked = time.time()
-        self.training_acc = [0] * rounds
-        self.testing_acc = [0] * rounds
-        self.training_loss = [0] * rounds
-        self.testing_loss = [0] * rounds
+        # self.training_acc = [0] * rounds
+        # self.testing_acc = [0] * rounds
+        # self.training_loss = [0] * rounds
+        # self.testing_loss = [0] * rounds
 
     def send_round_start_request(self, round_id, bucket_name, global_model, epochs):
         try:
@@ -88,6 +88,7 @@ class ReducerRestService:
         self.training = None
         self.stop_training_event = threading.Event()
         self.status = "Idle"
+        self.training_id = config["training_id"]
         threading.Thread(target=self.remove_disconnected_clients, daemon=True).start()
 
     def remove_disconnected_clients(self):
@@ -184,7 +185,7 @@ class ReducerRestService:
             if self.rounds == round_id and id in self.clients:
                 if not os.path.exists(self.tensorboard_path + "/" + id):
                     os.mkdir(self.tensorboard_path + "/" + id)
-                writer = SummaryWriter(self.tensorboard_path + "/" + id)
+                writer = SummaryWriter(self.tensorboard_path + "/" + self.training_id + "-" + id)
                 self.clients[id].status = "Idle"
                 res = request.args.get("report", None)
                 if res is None:
@@ -198,10 +199,10 @@ class ReducerRestService:
                 writer.add_scalar('test_accuracy', res["test_accuracy"], round_id)
                 writer.add_scalar('round_time', res["round_time"], round_id)
                 writer.close()
-                self.clients[id].training_acc.append(float(res["training_accuracy"]))
-                self.clients[id].testing_acc.append(float(res["test_accuracy"]))
-                self.clients[id].training_loss.append(float(res["training_loss"]))
-                self.clients[id].testing_loss.append(float(res["test_loss"]))
+                # self.clients[id].training_acc.append(float(res["training_accuracy"]))
+                # self.clients[id].testing_acc.append(float(res["test_accuracy"]))
+                # self.clients[id].training_loss.append(float(res["training_loss"]))
+                # self.clients[id].testing_loss.append(float(res["test_loss"]))
                 return jsonify({'status': "Success"})
             return jsonify({'status': "Failure"})
 
@@ -218,7 +219,7 @@ class ReducerRestService:
         def client_check():
             name = request.args.get('name', None)
             port = request.args.get('port', None)
-            if self.clients[name + ":" + port]:
+            if hasattr(self.clients, name + ":" + port):
                 self.clients[name + ":" + port].update_last_checked()
                 ret = {
                     'status': "Available"
@@ -298,7 +299,7 @@ class ReducerRestService:
             round_time = 0
             while True:
                 client_training = self.get_clients_training()
-                if (round_time%10) == 0:
+                if (round_time % 10) == 0:
                     print("Clients in Training : " + str(client_training), flush=True)
                 if client_training == 0 or round_time > config["round_time"]:
                     break

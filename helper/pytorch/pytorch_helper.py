@@ -31,7 +31,7 @@ class PytorchHelper:
     def add_base_model(self, tensordiff, base_model, learning_rate):
         w = OrderedDict()
         for name in tensordiff.keys():
-            w[name] = learning_rate*tensordiff[name] + base_model[name]
+            w[name] = learning_rate * tensordiff[name] + base_model[name]
         return w
 
     def save_model(self, weights_dict, path=None):
@@ -52,6 +52,25 @@ class PytorchHelper:
             return self.read_data_imagenet(data_path, trainset)
         elif dataset == "mnist":
             return self.read_data_mnist(data_path, trainset)
+        elif dataset == "cifar10":
+            return self.read_data_cifar10(data_path, trainset)
+
+    def read_data_cifar10(self, data_path, trainset=True):
+        pack = np.load(data_path)
+        if trainset:
+            X = pack['x_train']
+            y = pack['y_train']
+        else:
+            X = pack['x_test']
+            y = pack['y_test']
+        X = X.astype('float32')
+        y = y.astype('int64')
+        print(X.shape)
+        print(y.shape)
+        tensor_x = torch.Tensor(X)
+        tensor_y = torch.from_numpy(y)
+        dataset = TensorDataset(tensor_x, tensor_y)
+        return dataset
 
     def read_data_mnist(self, data_path, trainset=True):
         pack = np.load(data_path)

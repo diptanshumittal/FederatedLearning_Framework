@@ -49,7 +49,7 @@ if __name__ == '__main__':
         if not os.path.exists('data/clients/{}'.format(str(i+1))):
             os.mkdir('data/clients/{}'.format(str(i+1)))
         
-        np.savez('data/clients/{}'.format(str(i+1)) + '/mnist.npz',
+        np.savez('data/clients/{}'.format(str(i+1)) + '/data.npz',
                  x_train=data['x_train'][i],
                  y_train=data['y_train'][i],
                  x_test=data['x_test'][i],

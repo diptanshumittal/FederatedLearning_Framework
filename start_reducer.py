@@ -5,8 +5,6 @@ import socket
 import threading
 import subprocess
 from multiprocessing import Process
-from datetime import datetime
-from webbrowser import get
 import yaml
 
 
@@ -35,25 +33,20 @@ def start_reducer():
         os.mkdir('data/reducer')
     if not os.path.exists('data/minio_logs'):
         os.mkdir('data/minio_logs')
-    output_file = "data/minio_logs/minio_logs"+str(datetime.now())+".txt"
-    with open(output_file, 'w') as fp:
-        pass
+    subprocess.call("fuser -k 9000/tcp", shell=True)
     Process(target=run_container,
-            args=("./minio server minio_data/ --console-address \":9001\"",),
+            args=("./minio server minio_data/ --console-address \":9001\" >> data/minio_logs/minio_logs.txt",),
             daemon=True).start()
     time.sleep(5)
     with open("settings/settings-common.yaml", 'r') as file:
         config = dict(yaml.safe_load(file))
     config["storage"]["storage_config"]["storage_hostname"] = get_local_ip()
-    print(get_local_ip())
+    config["training_identifier"]["id"] = str(1 + int(config["training_identifier"]["id"]))
     with open("settings/settings-common.yaml", 'w') as f:
         yaml.dump(config, f)
-    output_file = "data/reducer/log"+str(datetime.now())+".txt"
-    with open(output_file, 'w') as fp:
-        pass
     Process(target=run_container, args=("python Reducer/reducer.py",),
             daemon=True).start()
-    time.sleep(5)
 
 
 start_reducer()
+time.sleep(5)

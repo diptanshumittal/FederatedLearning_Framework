@@ -77,7 +77,7 @@ class PytorchModelTrainer:
             "test_loss": test_loss,
             "test_accuracy": test_acc,
         }
-        print("-- VALIDATION COMPLETE! --", flush=True)
+        print("-- VALIDATION COMPLETED --", flush=True)
         return report
 
     def train(self, settings):
@@ -125,11 +125,11 @@ if __name__ == "__main__":
             raise e
     print("Setting files loaded successfully !!!")
     fedn_config["training"]["model"] = common_config["model"]
-    fedn_config["training"]["data_path"] = fedn_config["training"]["directory"] + "mnist.npz"
+    fedn_config["training"]["data_path"] = fedn_config["training"]["directory"] + "data.npz"
     fedn_config["training"]["global_model_path"] = fedn_config["training"]["directory"] + "weights.npz"
     model_trainer = PytorchModelTrainer(fedn_config["training"])
     model_trainer.model.to(model_trainer.device)
     stop_round_event = threading.Event()
     model_trainer.stop_event = stop_round_event
-    model_trainer.train({"epochs": 100})
+    model_trainer.train({"epochs": 50})
     print(model_trainer.validate())
