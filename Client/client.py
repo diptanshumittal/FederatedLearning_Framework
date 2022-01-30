@@ -105,25 +105,21 @@ class Server:
 
 class Client:
     def __init__(self, args):
-        with open("settings/settings-client.yaml", 'r') as file:
-            try:
-                client_config = dict(yaml.safe_load(file))
-            except yaml.YAMLError as e:
-                print('Failed to read config from settings file, exiting.', flush=True)
-                exit()
-        with open(os.getcwd() + '/settings/settings-common.yaml', 'r') as file:
+        with open('settings/settings-common.yaml', 'r') as file:
             try:
                 common_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
                 print('Failed to read model_config from settings file', flush=True)
                 raise e
-        self.training_id = common_config["model"]["model_type"] + "_" + common_config["training_identifier"]["id"]
+        self.training_id = common_config["training"]["dataset"] + "_" + common_config["model"]["model_type"] + "_" + \
+                           common_config["model"]["optimizer"] + "_" + common_config["training_identifier"]["id"]
         if not os.path.exists(os.getcwd() + "/data/logs"):
             os.mkdir(os.getcwd() + "/data/logs")
         if not os.path.exists(os.getcwd() + "/data/logs/" + self.training_id):
             os.mkdir(os.getcwd() + "/data/logs/" + self.training_id)
         sys.stdout = open(os.getcwd() + "/data/logs/" + self.training_id + "/client_" + args.client_id + ".txt", "w")
         print("Setting files loaded successfully !!!")
+        client_config = {}
         client_config["training"] = common_config["training"]
         client_config["training"]["model"] = common_config["model"]
         client_config["client"] = {

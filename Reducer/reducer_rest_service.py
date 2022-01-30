@@ -219,7 +219,7 @@ class ReducerRestService:
         def client_check():
             name = request.args.get('name', None)
             port = request.args.get('port', None)
-            if hasattr(self.clients, name + ":" + port):
+            if name + ":" + port in self.clients.keys():
                 self.clients[name + ":" + port].update_last_checked()
                 ret = {
                     'status': "Available"

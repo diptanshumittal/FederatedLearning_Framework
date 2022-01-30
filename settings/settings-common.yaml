@@ -11,14 +11,14 @@ model:
 storage:
   storage_config:
     storage_access_key: minioadmin
-    storage_hostname: 192.168.1.12
+    storage_hostname: 10.0.0.29
     storage_port: 9000
     storage_secret_key: minioadmin
     storage_secure_mode: false
   storage_type: S3
 training:
-  batch_size: 100
+  batch_size: 1000
   dataset: cifar10
   trainer: model_training
 training_identifier:
-  id: '9'
+  id: '1'
