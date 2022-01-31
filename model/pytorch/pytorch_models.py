@@ -15,6 +15,10 @@ def create_seed_model(config):
         model = Net()
     elif config["model_type"] == "resnet20":
         model = resnet.resnet20()
+    elif config["model_type"] == "resnet1202":
+        model = resnet.resnet1202()
+    elif config["model_type"] == "resnet110":
+        model = resnet.resnet110()
     else:
         model = Net()
     if config["loss"] == "neg_log_likelihood":

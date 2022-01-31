@@ -7,6 +7,8 @@ import time
 import yaml
 import json
 import torch
+import string
+import random
 import socket
 import threading
 import requests as r
@@ -19,9 +21,7 @@ parser = argparse.ArgumentParser(description='Federated Learning Client')
 parser.add_argument('--gpu', default='None', type=str,
                     help='GPU device to be used by the client')
 parser.add_argument('--client_id', default='1', type=str, help='Client_id used for accessing dataset and saving logs')
-
 args = parser.parse_args()
-
 print(args)
 
 
@@ -36,7 +36,6 @@ def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.connect(("8.8.8.8", 80))
     ip = s.getsockname()[0]
-    print(ip)
     s.close()
     return ip
 
@@ -128,11 +127,12 @@ class Client:
         }
         if args.gpu != "None":
             client_config["training"]["cuda_device"] = args.gpu
-        elif hasattr(os.environ, "CUDA_VISIBLE_DEVICES"):
+        elif "CUDA_VISIBLE_DEVICES" in os.environ.keys():
+            print("CUDA_VISIBLE_DEVICES :", os.environ["CUDA_VISIBLE_DEVICES"])
             if isinstance(os.environ["CUDA_VISIBLE_DEVICES"], list):
                 client_config["training"]["cuda_device"] = "cuda:" + str(os.environ["CUDA_VISIBLE_DEVICES"][0])
             elif isinstance(os.environ["CUDA_VISIBLE_DEVICES"], str):
-                client_config["training"]["cuda_device"] = "cuda:" + os.environ["CUDA_VISIBLE_DEVICES"]
+                client_config["training"]["cuda_device"] = "cuda:" + os.environ["CUDA_VISIBLE_DEVICES"][0]
             else:
                 print(os.environ["CUDA_VISIBLE_DEVICES"])
         else:
@@ -191,7 +191,7 @@ class Client:
         except Exception as e:
             print("Error in setting up Rest Service", e)
             exit()
-        print("Reducer connected successfully adn rest service started!!!")
+        print("Reducer connected successfully and rest service started!!!")
         threading.Thread(target=self.server_health_check, daemon=True).start()
 
     def server_health_check(self):
