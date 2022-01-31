@@ -65,8 +65,6 @@ class PytorchHelper:
             y = pack['y_test']
         X = X.astype('float32')
         y = y.astype('int64')
-        print(X.shape)
-        print(y.shape)
         tensor_x = torch.Tensor(X)
         tensor_y = torch.from_numpy(y)
         dataset = TensorDataset(tensor_x, tensor_y)
