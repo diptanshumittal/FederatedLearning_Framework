@@ -31,7 +31,7 @@ def googlenet(aux_logits=True, transform_input=False, **kwargs):
         transform_input (bool): If True, preprocesses the input according to the method with which it
             was trained on ImageNet. Default: *False*
     """
-    return GoogLeNet(aux_logits, transform_input, **kwargs)
+    return GoogLeNet(aux_logits=aux_logits, transform_input=transform_input, **kwargs)
 
 
 class GoogLeNet(nn.Module):

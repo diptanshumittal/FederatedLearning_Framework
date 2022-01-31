@@ -9,7 +9,7 @@ import collections
 from torch.utils.data import DataLoader
 from helper.pytorch.pytorch_helper import PytorchHelper
 from model.pytorch.pytorch_models import create_seed_model
-
+import model.pytorch.googlenet as googlenet
 
 def weights_to_np(weights):
     weights_np = collections.OrderedDict()
@@ -47,20 +47,20 @@ class PytorchModelTrainer:
 
     def evaluate(self, dataloader):
         self.model.eval()
-        train_loss = 0
-        train_correct = 0
+        loss = 0
+        correct = 0
         with torch.no_grad():
             for x, y in dataloader:
                 if self.stop_event.is_set():
                     return float(0), float(0)
                 x, y = x.to(self.device), y.to(self.device)
                 output = self.model(x)
-                train_loss += 32 * self.loss(output, y).item()
+                loss += self.loss(output, y).item() * x.size(0)
                 pred = output.argmax(dim=1, keepdim=True)
-                train_correct += pred.eq(y.view_as(pred)).sum().item()
-            train_loss /= len(dataloader.dataset)
-            train_acc = train_correct / len(dataloader.dataset)
-        return float(train_loss), float(train_acc)
+                correct += pred.eq(y.view_as(pred)).sum().item()
+            loss /= len(dataloader.dataset)
+            acc = correct / len(dataloader.dataset)
+        return float(loss), float(acc)
 
     def validate(self):
         print("-- RUNNING VALIDATION --", flush=True)
@@ -89,8 +89,12 @@ class PytorchModelTrainer:
                     return
                 x, y = x.to(self.device), y.to(self.device)
                 self.optimizer.zero_grad()
-                output = self.model(x)
-                error = self.loss(output, y)
+                if isinstance(self.model, googlenet.GoogLeNet):
+                    outputs, aux1, aux2 = self.model(x)
+                    error = self.loss(outputs, y) + 0.3 * self.loss(aux1, y) + 0.3 * self.loss(aux2, y)
+                else:
+                    output = self.model(x)
+                    error = self.loss(output, y)
                 error.backward()
                 self.optimizer.step()
         print("-- TRAINING COMPLETED --", flush=True)
@@ -111,23 +115,21 @@ class PytorchModelTrainer:
 
 
 if __name__ == "__main__":
-    with open(os.getcwd() + '/settings/settings-client.yaml', 'r') as file:
-        try:
-            fedn_config = dict(yaml.safe_load(file))
-        except yaml.YAMLError as e:
-            print('Failed to read config from settings file, exiting.', flush=True)
-            exit()
-    with open(os.getcwd() + '/settings/settings-common.yaml', 'r') as file:
-        try:
-            common_config = dict(yaml.safe_load(file))
-        except yaml.YAMLError as e:
-            print('Failed to read model_config from settings file', flush=True)
-            raise e
+    with open('settings/settings-common.yaml', 'r') as file:
+            try:
+                common_config = dict(yaml.safe_load(file))
+            except yaml.YAMLError as e:
+                print('Failed to read model_config from settings file', flush=True)
+                raise e
     print("Setting files loaded successfully !!!")
-    fedn_config["training"]["model"] = common_config["model"]
-    fedn_config["training"]["data_path"] = fedn_config["training"]["directory"] + "data.npz"
-    fedn_config["training"]["global_model_path"] = fedn_config["training"]["directory"] + "weights.npz"
-    model_trainer = PytorchModelTrainer(fedn_config["training"])
+    client_config = {}
+    client_config["training"] = common_config["training"]
+    client_config["training"]["model"] = common_config["model"]
+    client_config["training"]["cuda_device"] = "cuda:0"
+    client_config["training"]["directory"] = "data/clients/" + "1" + "/"
+    client_config["training"]["data_path"] = client_config["training"]["directory"] + "data.npz"
+    client_config["training"]["global_model_path"] = client_config["training"]["directory"] + "weights.npz"
+    model_trainer = PytorchModelTrainer(client_config["training"])
     model_trainer.model.to(model_trainer.device)
     stop_round_event = threading.Event()
     model_trainer.stop_event = stop_round_event
