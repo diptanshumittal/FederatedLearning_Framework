@@ -4,6 +4,7 @@ import threading
 import time
 import yaml
 import os
+import sys
 import subprocess
 from multiprocessing import Process
 
@@ -47,7 +48,7 @@ def start_clients_docker():
 def start_clients():
     try:
         available_gpus = ["cuda:0", "cuda:1", "cuda:2", "cuda:3", "cuda:0", "cuda:1", "cuda:2", "cuda:3"]
-        for i in range(1, 5):
+        for i in range(1, 3):
             Process(target=run_container,
                     args=("python Client/client.py --gpu=" + available_gpus[i - 1] + " --client_id=" + str(i),),
                     daemon=True).start()
@@ -55,5 +56,28 @@ def start_clients():
     except Exception as e:
         print(e)
 
+
+def start_clients_slurm(no_of_clients):
+    try:
+        for i in range(1, no_of_clients+1):
+            a_file = open("batchscripts/start_client.sh", "r")
+            list_of_lines = a_file.readlines()
+            list_of_lines[-1] = "mpirun -np 1 $PYTHON Client/client.py --client_id="+str(i)
+
+            a_file = open("batchscripts/start_client.sh", "w")
+            a_file.writelines(list_of_lines)
+            a_file.close()
+            Process(target=run_container,args=("sbatch batchscripts/start_client.sh",),daemon=True).start()
+            time.sleep(3)
+    except Exception as e:
+        print(e)
+
+# if __name__ == '__main__':
+
+#     if len(sys.argv) < 2:
+#         no_of_clients = 8
+#     else:
+#         no_of_clients = int(sys.argv[1])
+#     start_clients_slurm(no_of_clients)
 
 start_clients()

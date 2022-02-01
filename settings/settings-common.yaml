@@ -2,7 +2,7 @@ model:
   learning_rate: 0.1
   loss: cross_entropy
   mode: initialization
-  model_type: resnet20
+  model_type: googlenet
   momentum: 0.9
   optimizer: SFW
   ord: 2
@@ -11,14 +11,14 @@ model:
 storage:
   storage_config:
     storage_access_key: minioadmin
-    storage_hostname: 10.0.0.29
+    storage_hostname: 10.0.0.24
     storage_port: 9000
     storage_secret_key: minioadmin
     storage_secure_mode: false
   storage_type: S3
 training:
-  batch_size: 1000
-  dataset: cifar10
+  batch_size: 500
+  dataset: cifar100
   trainer: model_training
 training_identifier:
-  id: '1'
+  id: '23'

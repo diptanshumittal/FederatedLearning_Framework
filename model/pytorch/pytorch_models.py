@@ -5,7 +5,8 @@ import torch.nn.functional as F
 import argparse
 from helper.pytorch.optimizers import SFW
 from helper.pytorch.constraints import *
-import model.pytorch.resnet as resnet
+import model.pytorch.resnet as resnet 
+import model.pytorch.googlenet as googlenet
 
 
 def create_seed_model(config):
@@ -15,6 +16,12 @@ def create_seed_model(config):
         model = Net()
     elif config["model_type"] == "resnet20":
         model = resnet.resnet20()
+    elif config["model_type"] == "resnet1202":
+        model = resnet.resnet1202()
+    elif config["model_type"] == "resnet110":
+        model = resnet.resnet110()
+    elif config["model_type"] == "googlenet":
+        model = googlenet.googlenet()
     else:
         model = Net()
     if config["loss"] == "neg_log_likelihood":
