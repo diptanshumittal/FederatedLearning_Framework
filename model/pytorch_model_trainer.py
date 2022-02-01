@@ -11,6 +11,7 @@ from helper.pytorch.pytorch_helper import PytorchHelper
 from model.pytorch.pytorch_models import create_seed_model
 import model.pytorch.googlenet as googlenet
 
+
 def weights_to_np(weights):
     weights_np = collections.OrderedDict()
     for w in weights:
@@ -39,6 +40,7 @@ class PytorchModelTrainer:
         # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.device = torch.device(config["cuda_device"])
         self.loss = self.loss.to(self.device)
+        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, 300.1)
         print("Device being used for training :", self.device, flush=True)
         self.train_loader = DataLoader(self.helper.read_data(config["dataset"], config["data_path"], True),
                                        batch_size=int(config['batch_size']), shuffle=True)
@@ -97,6 +99,10 @@ class PytorchModelTrainer:
                     error = self.loss(output, y)
                 error.backward()
                 self.optimizer.step()
+                # print("Same epoch :", self.optimizer.param_groups[0]["lr"])
+            self.scheduler.step()
+            print(self.optimizer.param_groups[0]["lr"])
+
         print("-- TRAINING COMPLETED --", flush=True)
 
     def start_round(self, round_config, stop_event):
@@ -116,11 +122,11 @@ class PytorchModelTrainer:
 
 if __name__ == "__main__":
     with open('settings/settings-common.yaml', 'r') as file:
-            try:
-                common_config = dict(yaml.safe_load(file))
-            except yaml.YAMLError as e:
-                print('Failed to read model_config from settings file', flush=True)
-                raise e
+        try:
+            common_config = dict(yaml.safe_load(file))
+        except yaml.YAMLError as e:
+            print('Failed to read model_config from settings file', flush=True)
+            raise e
     print("Setting files loaded successfully !!!")
     client_config = {}
     client_config["training"] = common_config["training"]
@@ -133,5 +139,5 @@ if __name__ == "__main__":
     model_trainer.model.to(model_trainer.device)
     stop_round_event = threading.Event()
     model_trainer.stop_event = stop_round_event
-    model_trainer.train({"epochs": 50})
+    model_trainer.train({"epochs": 300})
     print(model_trainer.validate())
