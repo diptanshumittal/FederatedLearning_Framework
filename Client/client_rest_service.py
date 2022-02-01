@@ -4,6 +4,8 @@ from flask import Flask, jsonify, request
 import json
 import time
 import logging
+from flask_autodoc.autodoc import Autodoc
+# from flask.ext.autodoc import Autodoc
 
 
 class ClientRestService:
@@ -22,8 +24,18 @@ class ClientRestService:
         log = logging.getLogger('werkzeug')
         # log.setLevel(logging.ERROR)
         app = Flask(__name__)
+        auto = Autodoc(app)
+
+        @app.route('/documentation')
+        @auto.doc()
+        def documentation():
+            """
+            return API documentation page
+            """
+            return auto.html()
 
         @app.route('/')
+        @auto.doc()
         def index():
             ret = {
                 'description': "This is the client"
