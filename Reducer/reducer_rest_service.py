@@ -8,6 +8,7 @@ import numpy as np
 import requests as r
 import matplotlib.pyplot as plt
 from flask import Flask, jsonify, request
+from flask_autodoc.autodoc import Autodoc
 from helper.pytorch.pytorch_helper import PytorchHelper
 from torch.utils.tensorboard import SummaryWriter
 from concurrent.futures import ThreadPoolExecutor
@@ -128,6 +129,15 @@ class ReducerRestService:
         log = logging.getLogger('werkzeug')
         # log.setLevel(logging.ERROR)
         app = Flask(__name__)
+        auto = Autodoc(app)
+
+        @app.route('/documentation')
+        @auto.doc()
+        def documentation():
+            """
+            return API documentation page
+            """
+            return auto.html()
 
         @app.route('/')
         def index():

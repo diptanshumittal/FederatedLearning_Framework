@@ -7,8 +7,6 @@ import time
 import yaml
 import json
 import torch
-import string
-import random
 import socket
 import threading
 import requests as r
@@ -118,8 +116,7 @@ class Client:
             os.mkdir(os.getcwd() + "/data/logs/" + self.training_id)
         sys.stdout = open(os.getcwd() + "/data/logs/" + self.training_id + "/client_" + args.client_id + ".txt", "w")
         print("Setting files loaded successfully !!!")
-        client_config = {}
-        client_config["training"] = common_config["training"]
+        client_config = {"training": common_config["training"]}
         client_config["training"]["model"] = common_config["model"]
         client_config["client"] = {
             "hostname": get_local_ip(),

@@ -4,14 +4,14 @@ model:
   mode: initialization
   model_type: resnet20
   momentum: 0.9
-  optimizer: SFW
+  optimizer: adam
   ord: 2
   rescale: gradient
   value: 30
 storage:
   storage_config:
     storage_access_key: minioadmin
-    storage_hostname: 10.0.0.24
+    storage_hostname: 192.168.1.18
     storage_port: 9000
     storage_secret_key: minioadmin
     storage_secure_mode: false
@@ -21,4 +21,4 @@ training:
   dataset: cifar10
   trainer: model_training
 training_identifier:
-  id: '23'
+  id: '24'

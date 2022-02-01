@@ -59,18 +59,19 @@ def start_clients():
 
 def start_clients_slurm(no_of_clients):
     try:
-        for i in range(1, no_of_clients+1):
-            a_file = open("batchscripts/start_client.sh", "r")
+        for i in range(1, no_of_clients + 1):
+            a_file = open("batchscripts/start_client_1.sh", "r")
             list_of_lines = a_file.readlines()
-            list_of_lines[-1] = "mpirun -np 1 $PYTHON Client/client.py --client_id="+str(i)
+            list_of_lines[-1] = "mpirun -np 1 $PYTHON Client/client.py --client_id=" + str(i)
 
-            a_file = open("batchscripts/start_client.sh", "w")
+            a_file = open("batchscripts/start_client_1.sh", "w")
             a_file.writelines(list_of_lines)
             a_file.close()
-            Process(target=run_container,args=("sbatch batchscripts/start_client.sh",),daemon=True).start()
+            Process(target=run_container, args=("sbatch batchscripts/start_client_1.sh",), daemon=True).start()
             time.sleep(3)
     except Exception as e:
         print(e)
+
 
 # if __name__ == '__main__':
 
@@ -80,4 +81,4 @@ def start_clients_slurm(no_of_clients):
 #         no_of_clients = int(sys.argv[1])
 #     start_clients_slurm(no_of_clients)
 
-start_clients()
+start_clients_slurm(8)
