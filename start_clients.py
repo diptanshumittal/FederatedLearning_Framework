@@ -7,6 +7,9 @@ import os
 import sys
 import subprocess
 from multiprocessing import Process
+from extras.create_mnist_partitions import create_mnist_partitions
+from extras.create_cifar10_dataset import create_cifar10_partitions
+from extras.create_cifar100_dataset import create_cifar100_partitions
 
 
 def run_container(cmd):
@@ -47,7 +50,7 @@ def start_clients_docker():
 
 def start_clients():
     try:
-        available_gpus = ["cuda:0", "cuda:1", "cuda:2", "cuda:3", "cuda:0", "cuda:1", "cuda:2", "cuda:3"]
+        available_gpus = ["cuda:0", "cuda:0", "cuda:2", "cuda:3", "cuda:0", "cuda:1", "cuda:2", "cuda:3"]
         for i in range(1, 3):
             Process(target=run_container,
                     args=("python Client/client.py --gpu=" + available_gpus[i - 1] + " --client_id=" + str(i),),
@@ -57,9 +60,9 @@ def start_clients():
         print(e)
 
 
-def start_clients_slurm(no_of_clients):
+def start_clients_slurm(total_clients):
     try:
-        for i in range(1, no_of_clients + 1):
+        for i in range(1, total_clients + 1):
             a_file = open("batchscripts/start_client_1.sh", "r")
             list_of_lines = a_file.readlines()
             list_of_lines[-1] = "mpirun -np 1 $PYTHON Client/client.py --client_id=" + str(i)
@@ -73,12 +76,28 @@ def start_clients_slurm(no_of_clients):
         print(e)
 
 
-# if __name__ == '__main__':
+def create_dataset_partitions(common_config, no_of_clients):
+    if common_config["training"]["dataset"] == "mnist":
+        create_mnist_partitions(no_of_clients)
+    elif common_config["training"]["dataset"] == "cifar10":
+        create_cifar10_partitions(no_of_clients)
+    elif common_config["training"]["dataset"] == "cifar100":
+        create_cifar100_partitions(no_of_clients)
 
-#     if len(sys.argv) < 2:
-#         no_of_clients = 8
-#     else:
-#         no_of_clients = int(sys.argv[1])
-#     start_clients_slurm(no_of_clients)
 
-start_clients_slurm(8)
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        no_of_clients = 8
+    else:
+        no_of_clients = int(sys.argv[1])
+    with open('settings/settings-common.yaml', 'r') as file:
+        try:
+            common_config = dict(yaml.safe_load(file))
+        except yaml.YAMLError as error:
+            print('Failed to read model_config from settings file', flush=True)
+            raise error
+    create_dataset_partitions(common_config, no_of_clients)
+    if len(sys.argv) > 2 and sys.argv[2] == "slurm":
+        start_clients_slurm(no_of_clients)
+    else:
+        start_clients()

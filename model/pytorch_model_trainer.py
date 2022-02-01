@@ -40,7 +40,7 @@ class PytorchModelTrainer:
         # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.device = torch.device(config["cuda_device"])
         self.loss = self.loss.to(self.device)
-        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, 300.1)
+        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, int(config["max_epochs"])+1)
         print("Device being used for training :", self.device, flush=True)
         self.train_loader = DataLoader(self.helper.read_data(config["dataset"], config["data_path"], True),
                                        batch_size=int(config['batch_size']), shuffle=True)
@@ -54,7 +54,7 @@ class PytorchModelTrainer:
         with torch.no_grad():
             for x, y in dataloader:
                 if self.stop_event.is_set():
-                    return float(0), float(0)
+                    raise ValueError("Round stop requested by the reducer!!!")
                 x, y = x.to(self.device), y.to(self.device)
                 output = self.model(x)
                 loss += self.loss(output, y).item() * x.size(0)
@@ -74,6 +74,7 @@ class PytorchModelTrainer:
             raise
         report = {
             "classification_report": 'evaluated',
+            "status": "pass",
             "training_loss": training_loss,
             "training_accuracy": training_acc,
             "test_loss": test_loss,
@@ -88,7 +89,7 @@ class PytorchModelTrainer:
         for i in range(settings['epochs']):
             for x, y in self.train_loader:
                 if self.stop_event.is_set():
-                    return
+                    raise ValueError("Round stop requested by the reducer!!!")
                 x, y = x.to(self.device), y.to(self.device)
                 self.optimizer.zero_grad()
                 if isinstance(self.model, googlenet.GoogLeNet):
@@ -99,10 +100,7 @@ class PytorchModelTrainer:
                     error = self.loss(output, y)
                 error.backward()
                 self.optimizer.step()
-                # print("Same epoch :", self.optimizer.param_groups[0]["lr"])
             self.scheduler.step()
-            print(self.optimizer.param_groups[0]["lr"])
-
         print("-- TRAINING COMPLETED --", flush=True)
 
     def start_round(self, round_config, stop_event):
@@ -116,8 +114,8 @@ class PytorchModelTrainer:
             self.helper.save_model(weights_to_np(self.model.state_dict()), self.global_model_path)
             return report
         except Exception as e:
-            print(e)
-            return {}
+            print(e, flush=True)
+            return {"status": "fail"}
 
 
 if __name__ == "__main__":

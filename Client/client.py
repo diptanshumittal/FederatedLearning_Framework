@@ -1,5 +1,6 @@
 import argparse
 import os
+import subprocess
 import sys
 
 sys.path.append(os.getcwd())
@@ -48,34 +49,41 @@ class Server:
 
     def send_round_complete_request(self, round_id, report):
         try:
-            retval = r.get(
-                "{}?round_id={}&client_id={}&report={}".format(self.connect_string + '/roundcompletedbyclient',
-                                                               round_id, self.id, report))
-            if retval.json()['status'] == "Success":
-                print("Round ended successfully and notification received by server successfully", flush=True)
-                return True
+            for i in range(50):
+                retval = r.get(
+                    "{}?round_id={}&client_id={}&report={}".format(self.connect_string + '/roundcompletedbyclient',
+                                                                   round_id, self.id, report))
+                if retval.json()['status'] == "Success":
+                    print("Round ended successfully and notification received by server successfully", flush=True)
+                    return True
+                time.sleep(3)
             return False
-        except Exception as e:
+        except Exception as error:
+            print("Error while send_round_complete_request ", error)
             return False
 
     def send_round_stop_request(self, round_id):
         try:
-            retval = r.get(
-                "{}?round_id={}&client_id={}".format(self.connect_string + '/roundstoppedbyclient',
-                                                     round_id, self.id))
-            if retval.json()['status'] == "Success":
-                print("Round stopped successfully and notification received by server successfully", flush=True)
-                return True
+            for i in range(50):
+                retval = r.get(
+                    "{}?round_id={}&client_id={}".format(self.connect_string + '/roundstoppedbyclient',
+                                                         round_id, self.id))
+                if retval.json()['status'] == "Success":
+                    print("Round stopped successfully and notification received by server successfully", flush=True)
+                    return True
+                time.sleep(3)
             return False
-        except Exception as e:
+        except Exception as error:
+            print("Error while send_round_stop_request ", error)
             return False
 
     def connect_with_server(self, client_config):
         try:
             print("Trying to connect with the reducer")
-            for i in range(5):
-                retval = r.get("{}?name={}&port={}".format(self.connect_string + '/addclient',
-                                                           client_config["hostname"], client_config["port"]))
+            for i in range(10):
+                retval = r.get("{}?name={}&port={}&id={}".format(self.connect_string + '/addclient',
+                                                                 client_config["hostname"], client_config["port"],
+                                                                 client_config["training_id"]))
                 if retval.json()['status'] == "added":
                     self.connected = True
                     print("Connected with the reducer!!")
@@ -88,15 +96,18 @@ class Server:
 
     def check_server(self, client_config):
         try:
-            retval = r.get("{}?name={}&port={}".format(self.connect_string + '/clientcheck',
-                                                       client_config["hostname"], client_config["port"]))
-            if retval.json()['status'] != "Available":
-                print("Server disconnected", flush=True)
-                self.connected = False
-                return False
-            return True
-        except Exception as e:
+            for i in range(10):
+                retval = r.get("{}?name={}&port={}".format(self.connect_string + '/clientcheck',
+                                                           client_config["hostname"], client_config["port"]))
+                if retval.json()['status'] == "Available":
+                    return True
+                time.sleep(1)
+            print("Server disconnected", flush=True)
             self.connected = False
+            return False
+        except Exception as error:
+            self.connected = False
+            print("Error while check_server", error, flush=True)
             return False
 
 
@@ -105,9 +116,9 @@ class Client:
         with open('settings/settings-common.yaml', 'r') as file:
             try:
                 common_config = dict(yaml.safe_load(file))
-            except yaml.YAMLError as e:
+            except yaml.YAMLError as error:
                 print('Failed to read model_config from settings file', flush=True)
-                raise e
+                raise error
         self.training_id = common_config["training"]["dataset"] + "_" + common_config["model"]["model_type"] + "_" + \
                            common_config["model"]["optimizer"] + "_" + common_config["training_identifier"]["id"]
         if not os.path.exists(os.getcwd() + "/data/logs"):
@@ -122,6 +133,8 @@ class Client:
             "hostname": get_local_ip(),
             "port": find_free_port()
         }
+        client_config["client"]["training_id"] = self.training_id
+        self.port = client_config["client"]["port"]
         if args.gpu != "None":
             client_config["training"]["cuda_device"] = args.gpu
         elif "CUDA_VISIBLE_DEVICES" in os.environ.keys():
@@ -147,8 +160,8 @@ class Client:
                                       secret_key=minio_config["storage_secret_key"],
                                       secure=minio_config["storage_secure_mode"])
             assert (self.minio_client.bucket_exists("fedn-context"))
-        except Exception as e:
-            print(e)
+        except Exception as error:
+            print(error)
             print("Error while setting up minio configuration")
             exit()
         print("Minio client connected successfully !!!")
@@ -156,8 +169,8 @@ class Client:
         try:
             response = self.minio_client.get_object('fedn-context', "reducer_config.txt")
             client_config["reducer"] = json.loads(response.data)["reducer"]
-        except Exception as e:
-            print("Error in loading reducer_config file from minio", e)
+        except Exception as error:
+            print("Error in loading reducer_config file from minio", error)
             exit()
         finally:
             if response is not None:
@@ -165,8 +178,8 @@ class Client:
                 response.release_conn()
         try:
             self.model_trainer = PytorchModelTrainer(client_config["training"])
-        except Exception as e:
-            print("Error in model trainer setup ", e)
+        except Exception as error:
+            print("Error in model trainer setup ", error)
             exit()
         print("Model Trainer setup successful!!!")
 
@@ -175,8 +188,7 @@ class Client:
             self.client_config = client_config["client"]
             self.server = Server(client_config["reducer"]["hostname"], client_config["reducer"]["port"], self.id)
             if not self.server.connect_with_server(client_config["client"]):
-                print("here")
-                raise
+                raise ValueError("Not able to connect to the server")
             config = {
                 "server": self.server,
                 "minio_client": self.minio_client,
@@ -185,26 +197,32 @@ class Client:
                 "global_model_path": client_config["training"]["global_model_path"]
             }
             self.rest = ClientRestService(config)
-        except Exception as e:
-            print("Error in setting up Rest Service", e)
+        except Exception as error:
+            print("Error in setting up Rest Service", error)
             exit()
         print("Reducer connected successfully and rest service started!!!")
         threading.Thread(target=self.server_health_check, daemon=True).start()
 
     def server_health_check(self):
+        last_connected_time = time.time()
         while True:
+            x = 10
             if self.server.connected:
                 if not self.server.check_server(self.client_config):
                     x = 1
                 else:
-                    x = 10
+                    last_connected_time = time.time()
             else:
                 if not self.server.connect_with_server(self.client_config):
                     x = 1
                 else:
-                    x = 10
+                    last_connected_time = time.time()
             if not self.server.connected:
                 print("Server health check status : ", self.server.connected, flush=True)
+                if int(time.time() - last_connected_time) > 600:
+                    print("Stopping the client because reducer is not available for more than 600 sec continuously!",
+                          flush=True)
+                    subprocess.call("fuser -k " + self.port + "/tcp", shell=True)
             time.sleep(x)
 
     def run(self):
