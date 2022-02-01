@@ -24,11 +24,7 @@ def splitset(key, dataset, parts):
     return np.array(result)
 
 
-if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        nr_of_datasets = 10
-    else:
-        nr_of_datasets = int(sys.argv[1])
+def create_cifar10_partitions(nr_of_datasets):
     normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
     train_loader = torch.utils.data.DataLoader(
@@ -65,3 +61,11 @@ if __name__ == '__main__':
                  x_test=data['x_test'][i],
                  y_test=data['y_test'][i])
     print("DONE")
+
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        nr_of_datasets = 10
+    else:
+        nr_of_datasets = int(sys.argv[1])
+    create_cifar10_partitions(nr_of_datasets)

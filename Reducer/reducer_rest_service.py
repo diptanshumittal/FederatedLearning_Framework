@@ -37,8 +37,7 @@ class Client:
                 if retval.json()['status'] == "started":
                     self.status = "Training"
                     return True
-                else:
-                    time.sleep(5)
+                time.sleep(5)
             return False
         except Exception as e:
             print("Error while send_round_start_request ", e, flush=True)
@@ -50,8 +49,7 @@ class Client:
                 retval = r.get("{}".format(self.connect_string + '/stopround'))
                 if retval.json()['status'] == "stopping":
                     return True
-                else:
-                    time.sleep(5)
+                time.sleep(5)
             return False
         except Exception as e:
             print("Error while send_round_stop_request ", e, flush=True)
@@ -98,10 +96,14 @@ class ReducerRestService:
         :return:
         """
         while True:
+            dis_clients = {client: self.clients[client] for client in self.clients if
+                           self.clients[client].get_last_checked() > 50}
             self.clients = {client: self.clients[client] for client in self.clients if
                             self.clients[client].get_last_checked() < 50}
-            print("Connected clients are ", list(self.clients.keys()), flush=True)
-            time.sleep(30)
+            if len(list(dis_clients.keys())) > 0:
+                print("Disconnected clients are ", list(dis_clients.keys()), flush=True)
+                print("Connected clients are ", list(self.clients.keys()), flush=True)
+            time.sleep(10)
 
     def stop_training(self):
         """
@@ -134,36 +136,49 @@ class ReducerRestService:
         @app.route('/documentation')
         @auto.doc()
         def documentation():
-            """
-            return API documentation page
-            """
+            """Return API documentation page"""
             return auto.html()
 
         @app.route('/')
+        @auto.doc()
         def index():
+            """Return the type of flask server"""
             ret = {
                 'description': "This is the reducer"
             }
             return jsonify(ret)
 
         @app.route('/addclient')
+        @auto.doc()
         def add_client():
+            """Used the clients to get registered with the reducer"""
             name = request.args.get('name', None)
             port = request.args.get('port', None)
-            self.clients[name + ":" + port] = Client(name, port, self.rounds)
-            ret = {
-                'status': "added"
-            }
-            return jsonify(ret)
+            if request.args.get('id', "") == self.training_id:
+                self.clients[name + ":" + port] = Client(name, port, self.rounds)
+                print("Connected clients are ", list(self.clients.keys()), flush=True)
+                return jsonify({
+                    'status': "added"
+                })
+            else:
+                return jsonify({
+                    'status': "Not compatible!!"
+                })
 
         @app.route('/status')
+        @auto.doc()
         def status_check():
+            """Used by admin to check the status of reducer"""
             return jsonify({"status": self.status})
 
         @app.route('/training')
+        @auto.doc()
         def start_training():
-            if self.status != "Idle":
+            """Used by the admin to start the on-device training as per the supplied parameters"""
+            if self.status == "Training":
                 return jsonify({"status": "Training already running!!"})
+            elif self.status == "Stopping":
+                return jsonify({"status": "Please wait till the training is not stopped completely!!"})
             config = {
                 "rounds": int(request.args.get('rounds', '1')),
                 "round_time": int(request.args.get('round_time', '200')),
@@ -179,7 +194,9 @@ class ReducerRestService:
             return jsonify(ret)
 
         @app.route('/stoptraining')
+        @auto.doc()
         def stop_training_request():
+            """Used the admin to stop the ongoing training."""
             if self.training is None or self.status == "Idle":
                 return jsonify({"status": "Training not running!!"})
             if self.status == "Stopping":
@@ -189,7 +206,9 @@ class ReducerRestService:
             return jsonify({"status": "Stopping"})
 
         @app.route('/roundcompletedbyclient')
+        @auto.doc()
         def round_completed_by_client():
+            """Used by the clients to notify reducer when the round is completed by them"""
             round_id = int(request.args.get('round_id', "-1"))
             id = request.args.get("client_id", "0")
             if self.rounds == round_id and id in self.clients:
@@ -209,6 +228,7 @@ class ReducerRestService:
                 writer.add_scalar('test_accuracy', res["test_accuracy"], round_id)
                 writer.add_scalar('round_time', res["round_time"], round_id)
                 writer.close()
+                print("Client - ", id, " completed round ", round_id, flush=True)
                 # self.clients[id].training_acc.append(float(res["training_accuracy"]))
                 # self.clients[id].testing_acc.append(float(res["test_accuracy"]))
                 # self.clients[id].training_loss.append(float(res["training_loss"]))
@@ -217,16 +237,21 @@ class ReducerRestService:
             return jsonify({'status': "Failure"})
 
         @app.route('/roundstoppedbyclient')
+        @auto.doc()
         def round_stopped_by_client():
+            """Used by the clients to notify the reducer when the round is stopped by them."""
             round_id = int(request.args.get('round_id', "-1"))
             id = request.args.get("client_id", "0")
             if self.rounds == round_id and id in self.clients:
                 self.clients[id].status = "Idle"
+                print("Client - ", id, " stopped round ", round_id, flush=True)
                 return jsonify({'status': "Success"})
             return jsonify({'status': "Failure"})
 
         @app.route('/clientcheck')
+        @auto.doc()
         def client_check():
+            """Used by the clients for health-checking"""
             name = request.args.get('name', None)
             port = request.args.get('port', None)
             if name + ":" + port in self.clients.keys():
@@ -242,7 +267,9 @@ class ReducerRestService:
                 return jsonify(ret)
 
         @app.route('/creategraph')
+        @auto.doc()
         def create_graph():
+            """Not in use"""
             for key, client in self.clients.items():
                 x = np.linspace(1, len(client.training_acc), len(client.training_acc))
                 plt.plot(x, client.training_acc, "-b", label="Train_Acc")
@@ -287,6 +314,7 @@ class ReducerRestService:
         """
         for i in range(config["rounds"]):
             self.rounds += 1
+            print("Round ---", self.rounds, "---", flush=True)
             bucket_name = "round" + str(self.rounds)
             if self.minio_client.bucket_exists(bucket_name):
                 for obj in self.minio_client.list_objects(bucket_name):
@@ -297,24 +325,30 @@ class ReducerRestService:
             self.clients_updated = len(self.clients)
             executor = ThreadPoolExecutor(max_workers=10)
             pending_jobs = []
+            if self.stop_training_event.is_set():
+                return
             for _, client in self.clients.items():
                 pending_jobs.append(
                     executor.submit(client.send_round_start_request, self.rounds, bucket_name, self.global_model,
                                     config["epochs"]))
-            while len(pending_jobs) > 0:
-                print("Sending round start requests to the clients")
-                pending_jobs = remove_pending_jobs(pending_jobs)
-                time.sleep(5)
-            total_clients_started_training = self.get_clients_training()
-            round_time = 0
             while True:
-                client_training = self.get_clients_training()
-                if (round_time % 10) == 0:
-                    print("Clients in Training : " + str(client_training), flush=True)
-                if client_training == 0 or round_time > config["round_time"]:
+                if len(remove_pending_jobs(pending_jobs)) == 0:
                     break
-                round_time += 1
-                time.sleep(1)
+                time.sleep(0.1)
+            print("Round start requests send to the clients successfully", flush=True)
+            total_clients_started_training = self.get_clients_training()
+            print("Total clients that started the training are", total_clients_started_training, flush=True)
+            start_time = time.time()
+            total_clients_in_training = total_clients_started_training
+            while True:
+                round_time = time.time() - start_time
+                client_training = self.get_clients_training()
+                if client_training < total_clients_in_training:
+                    print("Clients in Training : " + str(client_training), flush=True)
+                    total_clients_in_training = client_training
+                if total_clients_in_training == 0 or int(round_time) > config["round_time"]:
+                    break
+                time.sleep(2)
 
             model = None
             helper = PytorchHelper()

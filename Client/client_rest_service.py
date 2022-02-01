@@ -29,21 +29,22 @@ class ClientRestService:
         @app.route('/documentation')
         @auto.doc()
         def documentation():
-            """
-            return API documentation page
-            """
+            """return API documentation page"""
             return auto.html()
 
         @app.route('/')
         @auto.doc()
         def index():
+            """return the type of flask server"""
             ret = {
                 'description': "This is the client"
             }
             return jsonify(ret)
 
         @app.route('/startround')
+        @auto.doc()
         def start_round():
+            """used by the reducer to request client to start a round as per the given parameters"""
             config = {
                 "round_id": request.args.get('round_id', None),
                 "bucket_name": request.args.get('bucket_name', None),
@@ -59,7 +60,9 @@ class ClientRestService:
             return jsonify(ret)
 
         @app.route('/stopround')
+        @auto.doc()
         def stop_round():
+            """used by the reducer to request client to stop the ongoing round"""
             self.stop_round_event.set()
             return jsonify({'status': "stopping"})
 
@@ -77,23 +80,18 @@ class ClientRestService:
             print("Running round - ", config["round_id"], flush=True)
             self.minio_client.fget_object('fedn-context', config["global_model"], self.global_model_path)
             report = self.model_trainer.start_round({"epochs": config["epochs"]}, self.stop_round_event)
-            self.minio_client.fput_object(config["bucket_name"], str(uuid.uuid4()) + ".npz", self.global_model_path)
-            report["round_time"] = time.time() - pre
-            print("Report : ", report, flush=True)
+            if report["status"] == "fail":
+                self.stop_round_event.set()
+            else:
+                self.minio_client.fput_object(config["bucket_name"], str(uuid.uuid4()) + ".npz", self.global_model_path)
+                report["round_time"] = time.time() - pre
+                print("Report : ", report, flush=True)
             if self.stop_round_event.is_set():
-                for i in range(50):
-                    if self.server.send_round_stop_request(config["round_id"]):
-                        break
-                    time.sleep(3)
-                return
-
-            res = False
-            for i in range(50):
-                res = self.server.send_round_complete_request(config["round_id"], json.dumps(report))
-                if res:
-                    break
-                time.sleep(3)
-            if not res:
-                print("Notification not sent to reducer successfully!!!", flush=True)
+                if self.server.send_round_stop_request(config["round_id"]):
+                    return
+            else:
+                if self.server.send_round_complete_request(config["round_id"], json.dumps(report)):
+                    return
+            print("Round notification not sent to reducer successfully!!!", flush=True)
         except Exception as e:
             print("Error during round :", e)
