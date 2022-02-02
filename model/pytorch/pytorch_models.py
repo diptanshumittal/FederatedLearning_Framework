@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import argparse
 from helper.pytorch.optimizers import SFW
 from helper.pytorch.constraints import *
-import model.pytorch.resnet as resnet 
+import model.pytorch.resnet as resnet
 import model.pytorch.googlenet as googlenet
 
 
@@ -34,12 +34,14 @@ def create_seed_model(config):
         constraints = create_lp_constraints(model, ord=float(config["ord"]), value=int(config["value"]),
                                             mode=config["mode"])
         optimizer = SFW(model.parameters(), constraints=constraints, learning_rate=float(config["learning_rate"]),
-                        momentum=float(config["momentum"]), rescale=config["rescale"])
+                        momentum=float(config["momentum"]), rescale=config["rescale"],
+                        weight_decay=float(config["weight_decay"]))
         make_feasible(model, constraints)
     elif config["optimizer"] == "adam":
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     elif config["optimizer"] == "SGD":
-        optimizer = torch.optim.SGD(model.parameters(), lr=float(config["learning_rate"]), momentum=float(config["momentum"]), weight_decay=float(config["weight_decay"]))
+        optimizer = torch.optim.SGD(model.parameters(), lr=float(config["learning_rate"]),
+                                    momentum=float(config["momentum"]), weight_decay=float(config["weight_decay"]))
     return model, loss, optimizer
 
 

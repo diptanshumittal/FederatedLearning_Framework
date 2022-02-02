@@ -32,13 +32,13 @@ def start_clients_docker():
             with open('docker/client-gpu.yaml', 'w') as f:
                 yaml.dump(config1, f)
 
-            with open("settings/settings-client.yaml", 'r') as file:
-                config = dict(yaml.safe_load(file))
-            config["client"]["port"] = 8090 + i
-            config["training"]["data_path"] = "data/clients/" + str(i) + "/mnist.npz"
-            config["training"]["global_model_path"] = "data/clients/" + str(i) + "/weights.npz"
-            with open("data/clients/" + str(i) + "/settings-client.yaml", 'w') as f:
-                yaml.dump(config, f)
+            # with open("settings/settings-client.yaml", 'r') as file:
+            #     config = dict(yaml.safe_load(file))
+            # config["client"]["port"] = 8090 + i
+            # config["training"]["data_path"] = "data/clients/" + str(i) + "/mnist.npz"
+            # config["training"]["global_model_path"] = "data/clients/" + str(i) + "/weights.npz"
+            # with open("data/clients/" + str(i) + "/settings-client.yaml", 'w') as f:
+            #     yaml.dump(config, f)
             threading.Thread(target=run_container,
                              args=(
                                  "docker-compose -f docker/client-gpu.yaml up >> data/clients/" + str(i) + "/log.txt",),
