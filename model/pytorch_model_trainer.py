@@ -126,8 +126,7 @@ if __name__ == "__main__":
             print('Failed to read model_config from settings file', flush=True)
             raise e
     print("Setting files loaded successfully !!!")
-    client_config = {}
-    client_config["training"] = common_config["training"]
+    client_config = {"training": common_config["training"]}
     client_config["training"]["model"] = common_config["model"]
     client_config["training"]["cuda_device"] = "cuda:0"
     client_config["training"]["directory"] = "data/clients/" + "1" + "/"
@@ -137,5 +136,5 @@ if __name__ == "__main__":
     model_trainer.model.to(model_trainer.device)
     stop_round_event = threading.Event()
     model_trainer.stop_event = stop_round_event
-    model_trainer.train({"epochs": 300})
+    model_trainer.train({"epochs": 10})
     print(model_trainer.validate())

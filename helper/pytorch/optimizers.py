@@ -16,7 +16,7 @@ class SFW(torch.optim.Optimizer):
         momentum (float): momentum factor, 0 for no momentum
     """
 
-    def __init__(self, params, constraints=None, learning_rate=0.1, rescale='diameter', momentum=0.9):
+    def __init__(self, params, constraints=None, learning_rate=0.1, rescale='diameter', momentum=0.9, weight_decay=0):
         if not (0.0 <= learning_rate <= 1.0):
             raise ValueError("Invalid learning rate: {}".format(learning_rate))
         if not (0.0 <= momentum <= 1.0):
@@ -27,7 +27,7 @@ class SFW(torch.optim.Optimizer):
         # Parameters
         self.rescale = rescale
 
-        defaults = dict(lr=learning_rate, momentum=momentum)
+        defaults = dict(lr=learning_rate, momentum=momentum, weight_decay=weight_decay)
         super(SFW, self).__init__(params, defaults)
 
     @torch.no_grad()
@@ -50,11 +50,13 @@ class SFW(torch.optim.Optimizer):
                 loss = closure()
         idx = 0
         for group in self.param_groups:
+            weight_decay = group['weight_decay']
             for p in group['params']:
                 if p.grad is None:
                     continue
                 d_p = p.grad
-
+                if weight_decay != 0:
+                    d_p = d_p.add(p, alpha=weight_decay)
                 # Add momentum
                 momentum = group['momentum']
                 if momentum > 0:
