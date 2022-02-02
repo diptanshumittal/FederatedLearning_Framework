@@ -38,8 +38,8 @@ def create_seed_model(config):
         make_feasible(model, constraints)
     elif config["optimizer"] == "adam":
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    else:
-        optimizer = torch.optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+    elif config["optimizer"] == "SGD":
+        optimizer = torch.optim.SGD(model.parameters(), lr=float(config["learning_rate"]), momentum=float(config["momentum"]), weight_decay=float(config["weight_decay"]))
     return model, loss, optimizer
 
 

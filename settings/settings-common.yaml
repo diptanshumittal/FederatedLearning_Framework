@@ -4,14 +4,15 @@ model:
   mode: initialization
   model_type: resnet20
   momentum: 0.9
-  optimizer: SFW
+  optimizer: SGD
   ord: 2
   rescale: gradient
   value: 30
+  weight_decay: 0.0005
 storage:
   storage_config:
     storage_access_key: minioadmin
-    storage_hostname: 192.168.1.12
+    storage_hostname: 10.0.0.28
     storage_port: 9000
     storage_secret_key: minioadmin
     storage_secure_mode: false
@@ -19,7 +20,7 @@ storage:
 training:
   batch_size: 256
   dataset: cifar10
-  max_epochs: 500
+  max_epochs: 300
   trainer: model_training
 training_identifier:
-  id: '1'
+  id: '10'
