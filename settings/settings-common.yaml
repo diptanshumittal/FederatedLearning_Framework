@@ -1,5 +1,5 @@
 model:
-  learning_rate: 0.4
+  learning_rate: 0.1
   loss: cross_entropy
   mode: initialization
   model_type: resnet20
@@ -18,9 +18,9 @@ storage:
     storage_secure_mode: false
   storage_type: S3
 training:
-  batch_size: 256
+  batch_size: 128
   dataset: cifar10
   max_epochs: 300
   trainer: model_training
 training_identifier:
-  id: '10'
+  id: '15'

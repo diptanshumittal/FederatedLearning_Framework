@@ -51,7 +51,7 @@ def start_clients_docker():
 def start_clients():
     try:
         available_gpus = ["cuda:0", "cuda:1", "cuda:2", "cuda:3", "cuda:0", "cuda:1", "cuda:2", "cuda:3"]
-        for i in range(1, 2):
+        for i in range(1, 6):
             Process(target=run_container,
                     args=("python Client/client.py --gpu=" + available_gpus[i - 1] + " --client_id=" + str(i),),
                     daemon=True).start()

@@ -128,7 +128,7 @@ if __name__ == "__main__":
     print("Setting files loaded successfully !!!")
     client_config = {"training": common_config["training"]}
     client_config["training"]["model"] = common_config["model"]
-    client_config["training"]["cuda_device"] = "cuda:0"
+    client_config["training"]["cuda_device"] = "cuda:1"
     client_config["training"]["directory"] = "data/clients/" + "1" + "/"
     client_config["training"]["data_path"] = client_config["training"]["directory"] + "data.npz"
     client_config["training"]["global_model_path"] = client_config["training"]["directory"] + "weights.npz"
@@ -136,5 +136,7 @@ if __name__ == "__main__":
     model_trainer.model.to(model_trainer.device)
     stop_round_event = threading.Event()
     model_trainer.stop_event = stop_round_event
-    model_trainer.train({"epochs": 10})
-    print(model_trainer.validate())
+    for i in range(30):
+        print(i)
+        model_trainer.train({"epochs": 10})
+        print(model_trainer.validate())
