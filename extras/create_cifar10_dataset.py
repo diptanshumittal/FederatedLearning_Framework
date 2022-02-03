@@ -29,8 +29,8 @@ def create_cifar10_partitions(nr_of_datasets):
                                      std=[0.229, 0.224, 0.225])
     train_loader = torch.utils.data.DataLoader(
         datasets.CIFAR10(root='./data', train=True, transform=transforms.Compose([
-            # transforms.RandomHorizontalFlip(),
-            # transforms.RandomCrop(32, 4),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomCrop(32, 4),
             transforms.ToTensor(),
             normalize,
         ]), download=True),
