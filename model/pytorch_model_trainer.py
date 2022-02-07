@@ -8,6 +8,7 @@ import threading
 import collections
 from torch.utils.data import DataLoader
 from helper.pytorch.pytorch_helper import PytorchHelper
+from helper.pytorch.lr_scheduler import CosineAnnealingLR
 from model.pytorch.pytorch_models import create_seed_model
 import model.pytorch.googlenet as googlenet
 
@@ -40,7 +41,14 @@ class PytorchModelTrainer:
         # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.device = torch.device(config["cuda_device"])
         self.loss = self.loss.to(self.device)
-        self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(self.optimizer, int(config["max_epochs"])+1)
+        args = {
+            "warm_up_epochs": int(config["model"]["warm_up_epochs"]),
+            "epochs": int(config["model"]["epochs"]),
+            "baseline_lr": float(config["model"]["baseline_lr"]),
+            "gamma": float(config["model"]["gamma"]),
+            "lr": float(config["model"]["learning_rate"]),
+        }
+        self.scheduler = CosineAnnealingLR(self.optimizer, args)
         print("Device being used for training :", self.device, flush=True)
         self.train_loader = DataLoader(self.helper.read_data(config["dataset"], config["data_path"], True),
                                        batch_size=int(config['batch_size']), shuffle=True)
@@ -101,6 +109,7 @@ class PytorchModelTrainer:
                 error.backward()
                 self.optimizer.step()
             self.scheduler.step()
+            print(self.optimizer.param_groups[0]["lr"])
         print("-- TRAINING COMPLETED --", flush=True)
 
     def start_round(self, round_config, stop_event):
@@ -128,7 +137,7 @@ if __name__ == "__main__":
     print("Setting files loaded successfully !!!")
     client_config = {"training": common_config["training"]}
     client_config["training"]["model"] = common_config["model"]
-    client_config["training"]["cuda_device"] = "cuda:2"
+    client_config["training"]["cuda_device"] = "cuda:0"
     client_config["training"]["directory"] = "data/clients/" + "1" + "/"
     client_config["training"]["data_path"] = client_config["training"]["directory"] + "data.npz"
     client_config["training"]["global_model_path"] = client_config["training"]["directory"] + "weights.npz"
