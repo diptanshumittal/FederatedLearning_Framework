@@ -1,5 +1,5 @@
 model:
-  learning_rate: 0.05
+  learning_rate: 0.4
   loss: cross_entropy
   mode: initialization
   model_type: resnet20
@@ -9,6 +9,10 @@ model:
   rescale: gradient
   value: 30
   weight_decay: 0.0005
+  warm_up_epochs: 5
+  epochs: 300
+  baseline_lr: 0.1
+  gamma: 0.1
 storage:
   storage_config:
     storage_access_key: minioadmin
@@ -18,9 +22,8 @@ storage:
     storage_secure_mode: false
   storage_type: S3
 training:
-  batch_size: 1024
+  batch_size: 256
   dataset: cifar10
-  max_epochs: 300
   trainer: model_training
 training_identifier:
   id: "15"
