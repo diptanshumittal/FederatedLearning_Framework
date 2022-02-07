@@ -8,7 +8,7 @@ import threading
 import collections
 from torch.utils.data import DataLoader
 from helper.pytorch.pytorch_helper import PytorchHelper
-from helper.pytorch.lr_scheduler import CosineAnnealingLR
+from helper.pytorch.lr_scheduler import CosineAnnealingLR, MultiStepLR
 from model.pytorch.pytorch_models import create_seed_model
 import model.pytorch.googlenet as googlenet
 
@@ -47,8 +47,9 @@ class PytorchModelTrainer:
             "baseline_lr": float(config["model"]["baseline_lr"]),
             "gamma": float(config["model"]["gamma"]),
             "lr": float(config["model"]["learning_rate"]),
+            "lrmilestone": list(map(int, config["model"]["lrmilestone"].split(" ")))
         }
-        self.scheduler = CosineAnnealingLR(self.optimizer, args)
+        self.scheduler = MultiStepLR(self.optimizer, args)
         print("Device being used for training :", self.device, flush=True)
         self.train_loader = DataLoader(self.helper.read_data(config["dataset"], config["data_path"], True),
                                        batch_size=int(config['batch_size']), shuffle=True)
@@ -73,7 +74,7 @@ class PytorchModelTrainer:
         return float(loss), float(acc)
 
     def validate(self):
-        print("-- RUNNING VALIDATION --", flush=True)
+        # print("-- RUNNING VALIDATION --", flush=True)
         try:
             training_loss, training_acc = self.evaluate(self.train_loader)
             test_loss, test_acc = self.evaluate(self.test_loader)
@@ -88,11 +89,11 @@ class PytorchModelTrainer:
             "test_loss": test_loss,
             "test_accuracy": test_acc,
         }
-        print("-- VALIDATION COMPLETED --", flush=True)
+        # print("-- VALIDATION COMPLETED --", flush=True)
         return report
 
     def train(self, settings):
-        print("-- RUNNING TRAINING --", flush=True)
+        # print("-- RUNNING TRAINING --", flush=True)
         self.model.train()
         for i in range(settings['epochs']):
             for x, y in self.train_loader:
@@ -109,8 +110,8 @@ class PytorchModelTrainer:
                 error.backward()
                 self.optimizer.step()
             self.scheduler.step()
-            print(self.optimizer.param_groups[0]["lr"])
-        print("-- TRAINING COMPLETED --", flush=True)
+            # print(self.optimizer.param_groups[0]["lr"])
+        # print("-- TRAINING COMPLETED --", flush=True)
 
     def start_round(self, round_config, stop_event):
         self.stop_event = stop_event
@@ -148,4 +149,5 @@ if __name__ == "__main__":
     for i in range(30):
         print(i)
         model_trainer.train({"epochs": 10})
-        print(model_trainer.validate())
+        print("After epochs", str((i + 1) * 10), "on device", client_config["training"]["cuda_device"], "results",
+              model_trainer.validate())
