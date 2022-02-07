@@ -128,7 +128,7 @@ if __name__ == "__main__":
     print("Setting files loaded successfully !!!")
     client_config = {"training": common_config["training"]}
     client_config["training"]["model"] = common_config["model"]
-    client_config["training"]["cuda_device"] = "cuda:1"
+    client_config["training"]["cuda_device"] = "cuda:2"
     client_config["training"]["directory"] = "data/clients/" + "1" + "/"
     client_config["training"]["data_path"] = client_config["training"]["directory"] + "data.npz"
     client_config["training"]["global_model_path"] = client_config["training"]["directory"] + "weights.npz"
