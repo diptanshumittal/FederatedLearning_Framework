@@ -130,7 +130,7 @@ class PytorchModelTrainer:
             return {"status": "fail"}
 
 
-def train(train_loader, model, criterion, optimizer, epoch):
+def train(train_loader, model, criterion, optimizer, epoch, model_trainer):
     """
         Run one train epoch
     """
@@ -144,8 +144,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
     for i, (input, target) in enumerate(train_loader):
         # measure data loading time
         data_time.update(time.time() - end)
-        target = target.cuda()
-        input_var = input.cuda()
+        target = target.cuda(model_trainer.device)
+        input_var = input.cuda(model_trainer.device)
         target_var = target
         # compute output
         output = model(input_var)
@@ -172,7 +172,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
                 epoch, i, len(train_loader), batch_time=batch_time, data_time=data_time, loss=losses, top1=top1))
 
 
-def validate(val_loader, model, criterion):
+def validate(val_loader, model, criterion, model_trainer):
     """
     Run evaluation
     """
@@ -184,9 +184,9 @@ def validate(val_loader, model, criterion):
     end = time.time()
     with torch.no_grad():
         for i, (input, target) in enumerate(val_loader):
-            target = target.cuda()
-            input_var = input.cuda()
-            target_var = target.cuda()
+            target = target.cuda(model_trainer.device)
+            input_var = input.cuda(model_trainer.device)
+            target_var = target.cuda(model_trainer.device)
             # compute output
             output = model(input_var)
             loss = criterion(output, target_var)
@@ -262,7 +262,7 @@ if __name__ == "__main__":
     print("Setting files loaded successfully !!!")
     client_config = {"training": common_config["training"]}
     client_config["training"]["model"] = common_config["model"]
-    client_config["training"]["cuda_device"] = "cuda:0"
+    client_config["training"]["cuda_device"] = "cuda:1"
     client_config["training"]["directory"] = "data/clients/" + "1" + "/"
     client_config["training"]["data_path"] = client_config["training"]["directory"] + "data.npz"
     client_config["training"]["global_model_path"] = client_config["training"]["directory"] + "weights.npz"
@@ -270,8 +270,8 @@ if __name__ == "__main__":
     model_trainer.model.to(model_trainer.device)
     stop_round_event = threading.Event()
     model_trainer.stop_event = stop_round_event
-    for i in range(2):
+    for i in range(200):
         print('current lr {:.5e}'.format(model_trainer.optimizer.param_groups[0]['lr']))
-        train(model_trainer.train_loader, model_trainer.model, model_trainer.loss, model_trainer.optimizer, i + 1)
+        train(model_trainer.train_loader, model_trainer.model, model_trainer.loss, model_trainer.optimizer, i + 1, model_trainer)
         model_trainer.scheduler.step()
-        validate(model_trainer.test_loader, model_trainer.model, model_trainer.loss)
+        validate(model_trainer.test_loader, model_trainer.model, model_trainer.loss, model_trainer)
