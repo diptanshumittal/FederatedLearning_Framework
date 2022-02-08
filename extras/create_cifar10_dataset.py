@@ -41,25 +41,21 @@ def create_cifar10_partitions(nr_of_datasets):
             normalize,
         ])),
         batch_size=10000, shuffle=True, pin_memory=True)
-    data = {}
-    for x, y in train_loader:
-        data["x_train"], data["y_train"] = x.numpy(), y.numpy()
-    for x, y in val_loader:
-        data["x_test"], data["y_test"] = x.numpy(), y.numpy()
     print("CREATING {} PARTITIONS INSIDE {}/data/clients".format(nr_of_datasets, os.getcwd()))
-    for key, val in data.items():
-        data[key] = splitset(key, val, nr_of_datasets)
+
     if not os.path.exists(os.getcwd() + '/data/clients'):
         os.mkdir(os.getcwd() + '/data/clients')
-    for i in range(nr_of_datasets):
-        if not os.path.exists('data/clients/{}'.format(str(i + 1))):
-            os.mkdir('data/clients/{}'.format(str(i + 1)))
-
-        np.savez('data/clients/{}'.format(str(i + 1)) + '/data.npz',
-                 x_train=data['x_train'][i],
-                 y_train=data['y_train'][i],
-                 x_test=data['x_test'][i],
-                 y_test=data['y_test'][i])
+    split = nr_of_datasets
+    for x_train,y_train in train_loader:
+        x_train = torch.tensor_split(x_train, split, dim=0)
+        y_train = torch.tensor_split(y_train, split, dim=0)
+        for x_test, y_test in val_loader:
+            x_test = torch.tensor_split(x_test, split, dim=0)
+            y_test = torch.tensor_split(y_test, split, dim=0)
+            for i in range(split):
+                if not os.path.exists('data/clients/{}'.format(str(i + 1))):
+                    os.mkdir('data/clients/{}'.format(str(i + 1)))
+                torch.save({"x_train": x_train[i], "y_train":y_train[i], "x_test": x_test[i], "y_test": y_test[i]}, 'data/clients/{}'.format(str(i + 1)) +"/data.npz")
     print("DONE")
 
 

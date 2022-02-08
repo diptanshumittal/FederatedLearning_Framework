@@ -55,7 +55,7 @@ class PytorchHelper:
         elif dataset == "mnist":
             return self.read_data_mnist(data_path, trainset)
         elif dataset == "cifar10":
-            return self.temp_read_data_cifar10(trainset)
+            return self.read_data_cifar10(data_path, trainset)
         elif dataset == "cifar100":
             return self.read_data_cifar100(data_path, trainset)
 
@@ -93,18 +93,19 @@ class PytorchHelper:
             ]))
 
     def read_data_cifar10(self, data_path, trainset=True):
-        pack = np.load(data_path)
+        pack = torch.load(data_path)
         if trainset:
             X = pack['x_train']
+            print(X.dtype)
             y = pack['y_train']
         else:
             X = pack['x_test']
             y = pack['y_test']
-        X = X.astype('float32')
-        y = y.astype('int64')
-        tensor_x = torch.Tensor(X)
-        tensor_y = torch.from_numpy(y)
-        dataset = TensorDataset(tensor_x, tensor_y)
+        # X = X.astype('float32')
+        # y = y.astype('int64')
+        # tensor_x = torch.Tensor(X)
+        # tensor_y = torch.from_numpy(y)
+        dataset = TensorDataset(X, y)
         return dataset
 
     def read_data_mnist(self, data_path, trainset=True):
