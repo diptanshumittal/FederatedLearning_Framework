@@ -6,6 +6,7 @@ import numpy as np
 import torch
 from torch.utils.data import TensorDataset
 import torchvision.transforms as transforms
+import torchvision.datasets as datasets
 
 
 class PytorchHelper:
@@ -53,8 +54,8 @@ class PytorchHelper:
             return self.read_data_imagenet(data_path, trainset)
         elif dataset == "mnist":
             return self.read_data_mnist(data_path, trainset)
-        elif dataset == "cifar10" :
-            return self.read_data_cifar10(data_path, trainset)
+        elif dataset == "cifar10":
+            return self.temp_read_data_cifar10(trainset)
         elif dataset == "cifar100":
             return self.read_data_cifar100(data_path, trainset)
 
@@ -68,12 +69,28 @@ class PytorchHelper:
             y = pack['y_test']
         X = X.astype('float32')
         y = y.astype('int64')
-        transform=transforms.Compose([transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+        transform = transforms.Compose([transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
         tensor_x = torch.Tensor(X)
         tensor_y = torch.from_numpy(y)
         tensor_x = transform(tensor_x)
         dataset = TensorDataset(tensor_x, tensor_y)
         return dataset
+
+    def temp_read_data_cifar10(self, trainset=True):
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                         std=[0.229, 0.224, 0.225])
+        if trainset:
+            return datasets.CIFAR10(root='./data', train=True, transform=transforms.Compose([
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomCrop(32, 4),
+                transforms.ToTensor(),
+                normalize,
+            ]), download=True)
+        else:
+            return datasets.CIFAR10(root='./data', train=False, transform=transforms.Compose([
+                transforms.ToTensor(),
+                normalize,
+            ]))
 
     def read_data_cifar10(self, data_path, trainset=True):
         pack = np.load(data_path)
