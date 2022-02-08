@@ -4,7 +4,7 @@ model:
   mode: initialization
   model_type: resnet20
   momentum: 0.9
-  optimizer: SGD
+  optimizer: SFW
   ord: 2
   rescale: gradient
   value: 30
