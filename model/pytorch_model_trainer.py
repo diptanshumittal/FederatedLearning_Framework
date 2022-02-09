@@ -122,7 +122,7 @@ class PytorchModelTrainer:
             self.model.to(self.device)
             # self.train(round_config)
             for i in range(round_config['epochs']):
-                print('current lr {:.5e}'.format(model_trainer.optimizer.param_groups[0]['lr']), flush=True)
+                print('current lr {:.5e}'.format(self.optimizer.param_groups[0]['lr']), flush=True)
                 train(self.train_loader, self.model, self.loss, self.optimizer, i + 1, self)
                 self.scheduler.step()
             report = self.validate()
@@ -266,7 +266,7 @@ if __name__ == "__main__":
     print("Setting files loaded successfully !!!")
     client_config = {"training": common_config["training"]}
     client_config["training"]["model"] = common_config["model"]
-    client_config["training"]["cuda_device"] = "cuda:0"
+    client_config["training"]["cuda_device"] = "cuda:1"
     client_config["training"]["directory"] = "data/clients/" + "1" + "/"
     client_config["training"]["data_path"] = client_config["training"]["directory"] + "data.npz"
     client_config["training"]["global_model_path"] = client_config["training"]["directory"] + "weights.npz"

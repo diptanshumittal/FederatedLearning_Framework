@@ -50,8 +50,8 @@ def start_clients_docker():
 
 def start_clients():
     try:
-        available_gpus = ["cuda:0", "cuda:1", "cuda:2", "cuda:3", "cuda:0", "cuda:1", "cuda:2", "cuda:3"]
-        for i in range(1, 6):
+        available_gpus = ["cuda:2", "cuda:2", "cuda:3", "cuda:3", "cuda:0", "cuda:1", "cuda:2", "cuda:3"]
+        for i in range(1, 5):
             Process(target=run_container,
                     args=("python Client/client.py --gpu=" + available_gpus[i - 1] + " --client_id=" + str(i),),
                     daemon=True).start()
@@ -96,7 +96,7 @@ if __name__ == '__main__':
         except yaml.YAMLError as error:
             print('Failed to read model_config from settings file', flush=True)
             raise error
-    create_dataset_partitions(common_config, no_of_clients)
+    # create_dataset_partitions(common_config, no_of_clients)
     if len(sys.argv) > 2 and sys.argv[2] == "slurm":
         start_clients_slurm(no_of_clients)
     else:
