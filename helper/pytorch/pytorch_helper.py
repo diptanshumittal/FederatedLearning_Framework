@@ -81,7 +81,7 @@ class PytorchHelper:
         dataset = TensorDataset(tensor_x, tensor_y)
         return dataset
 
-    def temp_read_data_cifar10(self, trainset=True, test_sample=10000, train_sample=50000):
+    def temp_read_data_cifar10(self, trainset=True, test_sample=2500, train_sample=12500):
         normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                          std=[0.229, 0.224, 0.225])
         if trainset:
