@@ -17,7 +17,7 @@ model:
 storage:
   storage_config:
     storage_access_key: minioadmin
-    storage_hostname: 10.0.0.25
+    storage_hostname: 192.168.55.147
     storage_port: 9000
     storage_secret_key: minioadmin
     storage_secure_mode: false
@@ -27,4 +27,4 @@ training:
   dataset: cifar10
   trainer: model_training
 training_identifier:
-  id: '18'
+  id: '21'

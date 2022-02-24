@@ -7,7 +7,6 @@ sys.path.append(os.getcwd())
 import time
 import yaml
 import json
-import torch
 import socket
 import threading
 import requests as r
@@ -19,7 +18,6 @@ from model.pytorch_model_trainer import PytorchModelTrainer
 parser = argparse.ArgumentParser(description='Federated Learning Client')
 parser.add_argument('--gpu', default='None', type=str,
                     help='GPU device to be used by the client')
-parser.add_argument('--client_id', default='1', type=str, help='Client_id used for accessing dataset and saving logs')
 args = parser.parse_args()
 print(args)
 
@@ -77,13 +75,31 @@ class Server:
             print("Error while send_round_stop_request ", error)
             return False
 
-    def connect_with_server(self, client_config):
+    def register_with_server(self, client_config):
         try:
-            print("Trying to connect with the reducer")
+            print("Trying to register with the reducer")
             for i in range(10):
                 retval = r.get("{}?name={}&port={}&id={}".format(self.connect_string + '/addclient',
                                                                  client_config["hostname"], client_config["port"],
                                                                  client_config["training_id"]))
+                if retval.json()['status'] == "added":
+                    self.connected = True
+                    print("Registered with the reducer!!")
+                    return True, retval.json()['id']
+                time.sleep(2)
+            return False, "None"
+        except Exception as e:
+            self.connected = False
+            return False
+
+    def connect_with_server(self, client_config, client_id):
+        try:
+            print("Trying to connect with the reducer")
+            for i in range(10):
+                retval = r.get("{}?name={}&port={}&id={}&client={}".format(self.connect_string + '/reconnectclient',
+                                                                           client_config["hostname"],
+                                                                           client_config["port"],
+                                                                           client_config["training_id"], client_id))
                 if retval.json()['status'] == "added":
                     self.connected = True
                     print("Connected with the reducer!!")
@@ -125,7 +141,6 @@ class Client:
             os.mkdir(os.getcwd() + "/data/logs")
         if not os.path.exists(os.getcwd() + "/data/logs/" + self.training_id):
             os.mkdir(os.getcwd() + "/data/logs/" + self.training_id)
-        sys.stdout = open(os.getcwd() + "/data/logs/" + self.training_id + "/client_" + args.client_id + ".txt", "w")
         print("Setting files loaded successfully !!!")
         client_config = {"training": common_config["training"]}
         client_config["training"]["model"] = common_config["model"]
@@ -147,10 +162,7 @@ class Client:
                 print(os.environ["CUDA_VISIBLE_DEVICES"])
         else:
             raise ValueError("GPU device not set!!")
-        client_config["training"]["directory"] = "data/clients/" + args.client_id + "/"
-        client_config["training"]["data_path"] = client_config["training"]["directory"] + "data.npz"
-        client_config["training"]["global_model_path"] = client_config["training"]["directory"] + "weights.npz"
-        print(client_config)
+
         try:
             storage_config = common_config["storage"]
             assert (storage_config["storage_type"] == "S3")
@@ -175,7 +187,24 @@ class Client:
         finally:
             if response is not None:
                 response.close()
-                response.release_conn()
+
+        self.client_id = ""
+        try:
+            self.id = client_config["client"]["hostname"] + ":" + str(client_config["client"]["port"])
+            self.client_config = client_config["client"]
+            self.server = Server(client_config["reducer"]["hostname"], client_config["reducer"]["port"], self.id)
+            status, self.client_id = self.server.register_with_server(client_config["client"])
+            if not status:
+                raise ValueError("Not able to connect to the server")
+        except Exception as e:
+            print(e)
+
+        sys.stdout = open(os.getcwd() + "/data/logs/" + self.training_id + "/" + self.client_id + ".txt", "w")
+        client_config["training"]["directory"] = "data/clients/" + self.client_id[-1] + "/"
+        client_config["training"]["data_path"] = client_config["training"]["directory"] + "data.npz"
+        client_config["training"]["global_model_path"] = client_config["training"]["directory"] + "weights.npz"
+        print(client_config)
+
         try:
             self.model_trainer = PytorchModelTrainer(client_config["training"])
         except Exception as error:
@@ -184,11 +213,6 @@ class Client:
         print("Model Trainer setup successful!!!")
 
         try:
-            self.id = client_config["client"]["hostname"] + ":" + str(client_config["client"]["port"])
-            self.client_config = client_config["client"]
-            self.server = Server(client_config["reducer"]["hostname"], client_config["reducer"]["port"], self.id)
-            if not self.server.connect_with_server(client_config["client"]):
-                raise ValueError("Not able to connect to the server")
             config = {
                 "server": self.server,
                 "minio_client": self.minio_client,
@@ -213,7 +237,7 @@ class Client:
                 else:
                     last_connected_time = time.time()
             else:
-                if not self.server.connect_with_server(self.client_config):
+                if not self.server.connect_with_server(self.client_config, self.client_id):
                     x = 1
                 else:
                     last_connected_time = time.time()
@@ -232,9 +256,9 @@ class Client:
 
 
 if __name__ == "__main__":
-    if not torch.cuda.is_available():
-        print("Cuda not available!!")
-        exit()
+    # if not torch.cuda.is_available():
+    #     print("Cuda not available!!")
+    #     exit()
     # print(torch.__version__, flush=True)
     try:
         client = Client(args)
