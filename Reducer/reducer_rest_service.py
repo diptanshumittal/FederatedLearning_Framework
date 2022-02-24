@@ -15,12 +15,13 @@ from concurrent.futures import ThreadPoolExecutor
 
 
 class Client:
-    def __init__(self, name, port, rounds):
+    def __init__(self, name, port, rounds, id):
         self.name = name
         self.port = port
         self.status = "Idle"
         self.connect_string = "http://{}:{}".format(self.name, self.port)
         self.last_checked = time.time()
+        self.id = id
         # self.training_acc = [0] * rounds
         # self.testing_acc = [0] * rounds
         # self.training_loss = [0] * rounds
@@ -87,6 +88,7 @@ class ReducerRestService:
         self.training = None
         self.stop_training_event = threading.Event()
         self.status = "Idle"
+        self.unique_clients = 0
         self.training_id = config["training_id"]
         threading.Thread(target=self.remove_disconnected_clients, daemon=True).start()
 
@@ -155,10 +157,31 @@ class ReducerRestService:
             name = request.args.get('name', None)
             port = request.args.get('port', None)
             if request.args.get('id', "") == self.training_id:
-                self.clients[name + ":" + port] = Client(name, port, self.rounds)
+                self.unique_clients += 1
+                available_id = "client_" + str(self.unique_clients)
+                self.clients[name + ":" + port] = Client(name, port, self.rounds, available_id)
                 print("Connected clients are ", list(self.clients.keys()), flush=True)
                 return jsonify({
-                    'status': "added"
+                    'status': "added",
+                    'id': available_id
+                })
+            else:
+                return jsonify({
+                    'status': "Not compatible!!"
+                })
+
+        @app.route('/reconnectclient')
+        @auto.doc()
+        def reconnect_client():
+            """Used the clients to get re-registered with the reducer"""
+            name = request.args.get('name', None)
+            port = request.args.get('port', None)
+            client_id = request.args.get('client', None)
+            if request.args.get('id', "") == self.training_id:
+                self.clients[name + ":" + port] = Client(name, port, self.rounds, client_id)
+                print("Connected clients are ", list(self.clients.keys()), flush=True)
+                return jsonify({
+                    'status': "added",
                 })
             else:
                 return jsonify({
