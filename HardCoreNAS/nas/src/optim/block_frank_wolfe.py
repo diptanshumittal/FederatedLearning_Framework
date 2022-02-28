@@ -17,7 +17,7 @@ class BlockFrankWolfe(Optimizer):
         super(BlockFrankWolfe, self).__init__(params, {})
 
         self.list_alphas = list_alphas
-        self.T = inference_time_limit
+        self.T = max(inference_time_limit, 1000.5)
         self.k = 0
 
         self.q = None
@@ -593,7 +593,8 @@ class BlockFrankWolfe(Optimizer):
         return True
 
     def latency_formula(self, alpha, beta, fixed_latency=0):
-        return fixed_latency + (beta @ self.Q.T + self.p) @ alpha
+        # return fixed_latency + (beta @ self.Q.T + self.p) @ alpha
+        return 0.0
 
     def reset_gamma_step(self):
         self.k = 0

@@ -1,17 +1,19 @@
 import os
 import sys
+import time
+
 sys.path.append(os.getcwd())
 import io
 import yaml
 import json
 import socket
-import threading
 import subprocess
 from minio import Minio
 from contextlib import closing
-from helper.pytorch_helper import PytorchHelper
+from multiprocessing import Process
+from helper.pytorch.pytorch_helper import PytorchHelper
 from model.pytorch_model_trainer import weights_to_np
-from model.pytorch_models import create_seed_model
+from model.pytorch.pytorch_models import create_seed_model
 from Reducer.reducer_rest_service import ReducerRestService
 
 
@@ -19,7 +21,10 @@ def find_free_port():
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind(('', 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        return str(s.getsockname()[1])
+        subprocess.call("fuser -k 7000/tcp", shell=True)
+        time.sleep(2)
+        return 7000
+        # return str(s.getsockname()[1])
 
 
 def get_local_ip():
@@ -32,6 +37,7 @@ def get_local_ip():
 
 def run_tensorboard(config):
     subprocess.call("fuser -k " + str(config["port"]) + "/tcp", shell=True)
+    time.sleep(2)
     cmd = "tensorboard --host 0.0.0.0 --logdir=" + config["path"] + " --port " + str(config["port"])
     subprocess.call(cmd, shell=True)
 
@@ -39,30 +45,40 @@ def run_tensorboard(config):
 class Reducer:
     def __init__(self):
         """ """
-        with open(os.getcwd() + '/settings/settings-reducer.yaml', 'r') as file:
+        with open(os.getcwd() + "/settings/settings-reducer.yaml", 'r') as file:
             try:
                 fedn_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
                 print('Failed to read config from settings file, exiting.', flush=True)
                 raise e
-        with open(os.getcwd() + '/settings/settings-common.yaml', 'r') as file:
+        with open(os.getcwd() + "/settings/settings-common.yaml", 'r') as file:
             try:
                 common_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as e:
                 print('Failed to read model_config from settings file', flush=True)
                 raise e
+        self.training_id = common_config["training"]["data"]["dataset"] + "_" + common_config["training"]["model"][
+            "model_type"] + "_" + \
+                           common_config["training"]["optimizer"]["optimizer"] + "_" + \
+                           common_config["training_identifier"]["id"]
+        print(self.training_id)
+        if not os.path.exists(os.getcwd() + "/data/logs"):
+            os.mkdir(os.getcwd() + "/data/logs")
+        if not os.path.exists(os.getcwd() + "/data/logs/" + self.training_id):
+            os.mkdir(os.getcwd() + "/data/logs/" + self.training_id)
+        # sys.stdout = open(os.getcwd() + "/data/logs/" + self.training_id + "/reducer.txt", "w")
         self.buckets = ["fedn-context"]
         self.port = find_free_port()
 
         if not os.path.exists(fedn_config["tensorboard"]["path"]):
             os.mkdir(fedn_config["tensorboard"]["path"])
-        threading.Thread(target=run_tensorboard, args=(fedn_config["tensorboard"],), daemon=True).start()
+        Process(target=run_tensorboard, args=(fedn_config["tensorboard"],), daemon=True).start()
         try:
             if not os.path.exists(os.getcwd() + '/data/reducer'):
                 os.mkdir(os.getcwd() + '/data/reducer')
             self.global_model = "initial_model.npz"
             self.global_model_path = os.getcwd() + '/data/reducer/initial_model.npz'
-            model, loss, optimizer = create_seed_model(common_config["model"])
+            model, loss, optimizer, _ = create_seed_model(common_config["training"])
             helper = PytorchHelper()
             helper.save_model(weights_to_np(model.state_dict()), self.global_model_path)
         except Exception as e:
@@ -96,7 +112,8 @@ class Reducer:
         config = {
             "flask_port": self.port,
             "global_model": self.global_model,
-            "tensorboard_path": fedn_config["tensorboard"]["path"]
+            "tensorboard_path": fedn_config["tensorboard"]["path"],
+            "training_id": self.training_id
         }
         self.rest = ReducerRestService(self.minio_client, config)
 

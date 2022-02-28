@@ -15,7 +15,6 @@ from collections import defaultdict
 from mnist import MNIST
 from PIL import Image
 
-
 IMG_EXTENSIONS = ['.png', '.jpg', '.jpeg']
 
 
@@ -38,6 +37,8 @@ def find_images_and_targets(folder, types=IMG_EXTENSIONS, class_to_idx=None, lea
     if class_to_idx is None:
         # building class index
         unique_labels = set(labels)
+        for i in range(len(unique_labels), 1000):
+            unique_labels.add("n" + str(i))
         sorted_labels = list(sorted(unique_labels, key=natural_key))
         class_to_idx = {c: idx for idx, c in enumerate(sorted_labels)}
     images_and_targets = zip(filenames, [class_to_idx[l] for l in labels])
@@ -63,19 +64,19 @@ def load_class_map(filename, root=''):
 
 class CsvDataset(torch.utils.data.Dataset):
     def __init__(self, file_path, transform=None, single_view=False,
-            data_percent=80, reverse_order=False):
+                 data_percent=80, reverse_order=False):
         super().__init__()
         self.csv = pd.read_csv(file_path)
         self.basedir = os.path.dirname(file_path)
-        kfolds=np.unique(self.csv['kfold'])
+        kfolds = np.unique(self.csv['kfold'])
         kfolds.sort()
         if reverse_order:
             kfolds = kfolds[::-1]
-        assert data_percent<=80, "you should leave 20% for val/test"
-        kfolds = kfolds[:int(np.ceil(len(kfolds)*data_percent/100))]
-        self.csv=self.csv[np.isin(self.csv['kfold'], kfolds)]
-        #remap instance_id
-        remap = {id:i for i,id in enumerate(np.unique(self.csv['instance_id']))}
+        assert data_percent <= 80, "you should leave 20% for val/test"
+        kfolds = kfolds[:int(np.ceil(len(kfolds) * data_percent / 100))]
+        self.csv = self.csv[np.isin(self.csv['kfold'], kfolds)]
+        # remap instance_id
+        remap = {id: i for i, id in enumerate(np.unique(self.csv['instance_id']))}
         self.csv['instance_id'] = self.csv['instance_id'].map(remap)
 
         self.transform = transform
@@ -90,15 +91,15 @@ class CsvDataset(torch.utils.data.Dataset):
         print(f"CSVDatas: {self}")
 
     def _remap_indices(self):
-        remap = {id:i for i,id in enumerate(np.unique(self.csv['instance_id']))}
+        remap = {id: i for i, id in enumerate(np.unique(self.csv['instance_id']))}
         self.csv['instance_id'] = self.csv['instance_id'].map(remap)
 
     def __len__(self):
         return len(np.unique(self.csv['instance']))
 
     def __getitem__(self, item):
-        dat = self.csv[self.csv['instance_id']==item]
-        assert len(dat)>0
+        dat = self.csv[self.csv['instance_id'] == item]
+        assert len(dat) > 0
 
         ind = 0 if self.single_view else np.random.randint(len(dat))
         dat = dat.iloc[ind]
@@ -107,7 +108,7 @@ class CsvDataset(torch.utils.data.Dataset):
             img = Image.open(path).convert('RGB')
         except:
             print(f'Warning : failed to loader {path}')
-            img = Image.new('RGB', (100,100))
+            img = Image.new('RGB', (100, 100))
 
         if self.transform is not None:
             img = self.transform(img)
@@ -118,15 +119,14 @@ class CsvDataset(torch.utils.data.Dataset):
         n_images = n_instances if self.single_view else len(self.csv)
         return (f"{n_instances} instances, {n_images} images")
 
-
     def split_dataset(self, split_ratio, ds2_single_view=None, **kwargs):
         dataset1 = deepcopy(self)
         dataset2 = deepcopy(self)
         folds = np.unique(self.csv['kfold'])
         folds.sort()
-        n_folds1 = int(len(folds)*split_ratio)
+        n_folds1 = int(len(folds) * split_ratio)
         thresh = folds[n_folds1]
-        mask = dataset1.csv['kfold']<thresh
+        mask = dataset1.csv['kfold'] < thresh
         dataset1.csv = dataset1.csv[mask]
         dataset2.csv = dataset2.csv[~mask]
         dataset1._remap_indices()
@@ -141,6 +141,7 @@ class CsvDataset(torch.utils.data.Dataset):
 
         return dataset1, dataset2
 
+
 class MNIST_Dataset(data.Dataset):
 
     def __init__(
@@ -150,16 +151,17 @@ class MNIST_Dataset(data.Dataset):
             transform=None,
             class_map=''):
 
-        class_to_idx = {str(c):c for c in range(10)}
+        class_to_idx = {str(c): c for c in range(10)}
         # images, class_to_idx = find_images_and_targets(root, class_to_idx=class_to_idx)
         mnist_dataset = np.load(root)
-        if(training) :  # differ from images implementation. [i][j] denotes [j][i]
-            images , target = mnist_dataset['x_train'] , mnist_dataset['y_train']
-        else :
-            images , target = mnist_dataset['x_test'] , mnist_dataset['y_test']
+        if (training):  # differ from images implementation. [i][j] denotes [j][i]
+            images, target = mnist_dataset['x_train'], mnist_dataset['y_train']
+        else:
+            images, target = mnist_dataset['x_test'], mnist_dataset['y_test']
         if len(images) == 0:
-            raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
-                               "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
+            raise (RuntimeError("Found 0 images in subfolders of: " + root + "\n"
+                                                                             "Supported image extensions are: " + ",".join(
+                IMG_EXTENSIONS)))
         self.root = root
         self.imgs = images.astype('int8')  # torchvision ImageFolder compat
         self.trgt = target.astype('int8')
@@ -168,9 +170,9 @@ class MNIST_Dataset(data.Dataset):
 
     def __getitem__(self, index):
         # path, target = self.samples[index]
-        img , target = self.imgs[index] , self.trgt[index]
+        img, target = self.imgs[index], self.trgt[index]
         # img = np.repeat(np.expand_dims(np.array(img).reshape(28,28) , axis = 2) , 3 , axis = 2)
-        img = np.array(img).reshape(28,28)
+        img = np.array(img).reshape(28, 28)
         img = Image.fromarray(img.astype(np.uint8)).convert('RGB')
 
         if self.transform is not None:
@@ -187,7 +189,7 @@ class MNIST_Dataset(data.Dataset):
         dataset2 = deepcopy(self)
 
         target_dict = defaultdict(list)
-        for indx in range(len(self)) :
+        for indx in range(len(self)):
             target_dict[self.trgt[indx]].append(indx)
         dataset1.imgs = []
         dataset1.trgt = []
@@ -196,10 +198,10 @@ class MNIST_Dataset(data.Dataset):
         for k, v in target_dict.items():
             num_elem1 = int(len(v) * split_ratio)
             # num_elem2 = len(v)-num_elem1
-            for i in v[:num_elem1] :
+            for i in v[:num_elem1]:
                 dataset1.imgs.append(self.imgs[i])
                 dataset1.trgt.append(k)  # self.imgs[1][i]
-            for i in v[num_elem1:] :
+            for i in v[num_elem1:]:
                 dataset2.imgs.append(self.imgs[i])
                 dataset2.trgt.append(k)  # self.imgs[1][i]
         return dataset1, dataset2
@@ -219,8 +221,9 @@ class Dataset(data.Dataset):
             class_to_idx = load_class_map(class_map, root)
         images, class_to_idx = find_images_and_targets(root, class_to_idx=class_to_idx)
         if len(images) == 0:
-            raise(RuntimeError("Found 0 images in subfolders of: " + root + "\n"
-                               "Supported image extensions are: " + ",".join(IMG_EXTENSIONS)))
+            raise (RuntimeError("Found 0 images in subfolders of: " + root + "\n"
+                                                                             "Supported image extensions are: " + ",".join(
+                IMG_EXTENSIONS)))
         self.root = root
         self.samples = images
         self.imgs = self.samples  # torchvision ImageFolder compat
@@ -234,7 +237,7 @@ class Dataset(data.Dataset):
             img = open(path, 'rb').read() if self.load_bytes else Image.open(path).convert('RGB')
         except:
             print(f'Warning : failed to loader {path}')
-            img = Image.new('RGB', (100,100))    
+            img = Image.new('RGB', (100, 100))
         if self.transform is not None:
             img = self.transform(img)
         if target is None:
@@ -266,12 +269,13 @@ class Dataset(data.Dataset):
         dataset2.samples = []
         for k, v in target_dict.items():
             num_elem1 = int(len(v) * split_ratio)
-            num_elem2 = len(v)-num_elem1
-            dataset1.samples.extend(zip(v[:num_elem1], [k]*num_elem1))
-            dataset2.samples.extend(zip(v[num_elem1:], [k]*num_elem2))
+            num_elem2 = len(v) - num_elem1
+            dataset1.samples.extend(zip(v[:num_elem1], [k] * num_elem1))
+            dataset2.samples.extend(zip(v[num_elem1:], [k] * num_elem2))
         dataset1.imgs = dataset1.samples
         dataset2.imgs = dataset2.samples
         return dataset1, dataset2
+
 
 def _extract_tar_info(tarfile, class_to_idx=None, sort=True):
     files = []
