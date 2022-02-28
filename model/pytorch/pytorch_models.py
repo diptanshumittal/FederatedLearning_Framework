@@ -10,17 +10,17 @@ import model.pytorch.googlenet as googlenet
 
 
 def create_seed_model(config):
-    if config["model_type"] == "mnist":
+    if config["model"]["model_type"] == "mnist":
         model = Net()
-    elif config["model_type"] == "mnist":
+    elif config["model"]["model_type"] == "mnist":
         model = Net()
-    elif config["model_type"] == "resnet20":
+    elif config["model"]["model_type"] == "resnet20":
         model = resnet.resnet20()
-    elif config["model_type"] == "resnet1202":
+    elif config["model"]["model_type"] == "resnet1202":
         model = resnet.resnet1202()
-    elif config["model_type"] == "resnet110":
+    elif config["model"]["model_type"] == "resnet110":
         model = resnet.resnet110()
-    elif config["model_type"] == "googlenet":
+    elif config["model"]["model_type"] == "googlenet":
         model = googlenet.googlenet()
     else:
         model = Net()
@@ -30,19 +30,29 @@ def create_seed_model(config):
         loss = nn.CrossEntropyLoss()
     else:
         loss = nn.NLLLoss()
-    if config["optimizer"] == "SFW":
-        constraints = create_lp_constraints(model, ord=float(config["ord"]), value=int(config["value"]),
-                                            mode=config["mode"])
-        optimizer = SFW(model.parameters(), constraints=constraints, learning_rate=float(config["learning_rate"]),
-                        momentum=float(config["momentum"]), rescale=config["rescale"],
-                        weight_decay=float(config["weight_decay"]))
+    if config["optimizer"]["optimizer"] == "SFW":
+        cf = config["optimizer"]
+        constraints = create_lp_constraints(model, ord=float(cf["ord"]), value=int(cf["value"]),
+                                            mode=cf["mode"])
+        optimizer = SFW(model.parameters(), constraints=constraints, learning_rate=float(cf["learning_rate"]),
+                        momentum=float(cf["momentum"]), rescale=cf["rescale"],
+                        weight_decay=float(cf["weight_decay"]))
         make_feasible(model, constraints)
-    elif config["optimizer"] == "adam":
+    elif config["optimizer"]["optimizer"] == "adam":
         optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    elif config["optimizer"] == "SGD":
+    elif config["optimizer"]["optimizer"] == "SGD":
         optimizer = torch.optim.SGD(model.parameters(), lr=float(config["learning_rate"]),
                                     momentum=float(config["momentum"]), weight_decay=float(config["weight_decay"]))
-    return model, loss, optimizer
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    if config["lr_scheduler"]["type"] == "multistep":
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer,
+                                                         list(map(int,
+                                                                  config["lr_scheduler"]["lrmilestone"].split(" "))),
+                                                         gamma=float(config["lr_scheduler"]["gamma"]), last_epoch=-1)
+    else:
+        scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, gamma=1, last_epoch=-1)
+    return model, loss, optimizer, scheduler
 
 
 def create_nas_global_model(num_classes=10):

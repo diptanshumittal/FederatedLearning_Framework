@@ -131,25 +131,23 @@ class Client:
     def __init__(self, args):
         with open('settings/settings-common.yaml', 'r') as file:
             try:
-                common_config = dict(yaml.safe_load(file))
+                client_config = dict(yaml.safe_load(file))
             except yaml.YAMLError as error:
                 print('Failed to read model_config from settings file', flush=True)
                 raise error
-        self.training_id = common_config["training"]["dataset"] + "_" + common_config["model"]["model_type"] + "_" + \
-                           common_config["model"]["optimizer"] + "_" + common_config["training_identifier"]["id"]
+        self.training_id = client_config["training"]["data"]["dataset"] + "_" + client_config["training"]["model"]["model_type"] + "_" + \
+                           client_config["training"]["optimizer"]["optimizer"] + "_" + client_config["training_identifier"]["id"]
         if not os.path.exists(os.getcwd() + "/data/logs"):
             os.mkdir(os.getcwd() + "/data/logs")
         if not os.path.exists(os.getcwd() + "/data/logs/" + self.training_id):
             os.mkdir(os.getcwd() + "/data/logs/" + self.training_id)
         print("Setting files loaded successfully !!!")
-        client_config = {"training": common_config["training"]}
-        client_config["training"]["model"] = common_config["model"]
+        self.port = find_free_port()
         client_config["client"] = {
             "hostname": get_local_ip(),
-            "port": find_free_port()
+            "port": self.port
         }
         client_config["client"]["training_id"] = self.training_id
-        self.port = client_config["client"]["port"]
         if args.gpu != "None":
             client_config["training"]["cuda_device"] = args.gpu
         elif "CUDA_VISIBLE_DEVICES" in os.environ.keys():
@@ -164,7 +162,7 @@ class Client:
             raise ValueError("GPU device not set!!")
 
         try:
-            storage_config = common_config["storage"]
+            storage_config = client_config["storage"]
             assert (storage_config["storage_type"] == "S3")
             minio_config = storage_config["storage_config"]
             self.minio_client = Minio("{0}:{1}".format(minio_config["storage_hostname"], minio_config["storage_port"]),
@@ -201,6 +199,8 @@ class Client:
 
         sys.stdout = open(os.getcwd() + "/data/logs/" + self.training_id + "/" + self.client_id + ".txt", "w")
         client_config["training"]["directory"] = "data/clients/" + self.client_id[-1] + "/"
+        if not os.path.exists(client_config["training"]["directory"]):
+            os.mkdir(client_config["training"]["directory"])
         client_config["training"]["data_path"] = client_config["training"]["directory"] + "data.npz"
         client_config["training"]["global_model_path"] = client_config["training"]["directory"] + "weights.npz"
         print(client_config)

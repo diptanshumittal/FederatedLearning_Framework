@@ -57,13 +57,16 @@ class Reducer:
             except yaml.YAMLError as e:
                 print('Failed to read model_config from settings file', flush=True)
                 raise e
-        self.training_id = common_config["training"]["dataset"] + "_" + common_config["model"]["model_type"] + "_" + \
-                           common_config["model"]["optimizer"] + "_" + common_config["training_identifier"]["id"]
+        self.training_id = common_config["training"]["data"]["dataset"] + "_" + common_config["training"]["model"][
+            "model_type"] + "_" + \
+                           common_config["training"]["optimizer"]["optimizer"] + "_" + \
+                           common_config["training_identifier"]["id"]
+        print(self.training_id)
         if not os.path.exists(os.getcwd() + "/data/logs"):
             os.mkdir(os.getcwd() + "/data/logs")
         if not os.path.exists(os.getcwd() + "/data/logs/" + self.training_id):
             os.mkdir(os.getcwd() + "/data/logs/" + self.training_id)
-        sys.stdout = open(os.getcwd() + "/data/logs/" + self.training_id + "/reducer.txt", "w")
+        # sys.stdout = open(os.getcwd() + "/data/logs/" + self.training_id + "/reducer.txt", "w")
         self.buckets = ["fedn-context"]
         self.port = find_free_port()
 
@@ -75,7 +78,7 @@ class Reducer:
                 os.mkdir(os.getcwd() + '/data/reducer')
             self.global_model = "initial_model.npz"
             self.global_model_path = os.getcwd() + '/data/reducer/initial_model.npz'
-            model, loss, optimizer = create_seed_model(common_config["model"])
+            model, loss, optimizer, _ = create_seed_model(common_config["training"])
             helper = PytorchHelper()
             helper.save_model(weights_to_np(model.state_dict()), self.global_model_path)
         except Exception as e:

@@ -1,4 +1,5 @@
 import math
+import torch
 
 
 class CosineAnnealingLR(object):
@@ -72,3 +73,4 @@ def set_current_lr(optimizer, lr):
             param_group['lr'] = lr
     else:
         optimizer.lr = lr
+

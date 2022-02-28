@@ -1,8 +1,3 @@
-# ===========================================================================
-# Project:      StochasticFrankWolfe 2020 / IOL Lab @ ZIB
-# File:         pytorch/optimizers.py
-# Description:  Pytorch implementation of Stochastic Frank Wolfe, AdaGradSFW and SGD with projection
-# ===========================================================================
 import torch
 
 
