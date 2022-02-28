@@ -32,31 +32,16 @@ class PytorchModelTrainer:
     def __init__(self, config):
         self.helper = PytorchHelper()
         self.stop_event = threading.Event()
-        self.trainer_type = config["trainer"]
         self.global_model_path = config["global_model_path"]
-        self.model, self.loss, self.optimizer = create_seed_model(config["model"])
-        # os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3" 
-        # torch.cuda.set_device(int(config["cuda_device"]))
-        # print(torch.cuda.current_device())
-        # os.environ['CUDA_VISIBLE_DEVICES'] = config["cuda_device"]
-        # self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.model, self.loss, self.optimizer, self.scheduler = create_seed_model(config)
         self.device = torch.device(config["cuda_device"])
         self.loss = self.loss.to(self.device)
         self.model.to(self.device)
-        args = {
-            "warm_up_epochs": int(config["model"]["warm_up_epochs"]),
-            "epochs": int(config["model"]["epochs"]),
-            "baseline_lr": float(config["model"]["baseline_lr"]),
-            "gamma": float(config["model"]["gamma"]),
-            "lr": float(config["model"]["learning_rate"]),
-            "lrmilestone": list(map(int, config["model"]["lrmilestone"].split(" ")))
-        }
-        self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=args["lrmilestone"], last_epoch=-1)
         print("Device being used for training :", self.device, flush=True)
-        self.train_loader = DataLoader(self.helper.read_data(config["dataset"], config["data_path"], True),
-                                       batch_size=int(config['batch_size']), shuffle=True, pin_memory=True)
-        self.test_loader = DataLoader(self.helper.read_data(config["dataset"], config["data_path"], False),
-                                      batch_size=int(config['batch_size']), shuffle=True, pin_memory=True)
+        self.train_loader = DataLoader(self.helper.read_data(config["data"]["dataset"], config["data_path"], True),
+                                       batch_size=int(config["data"]['batch_size']), shuffle=True, pin_memory=True)
+        self.test_loader = DataLoader(self.helper.read_data(config["data"]["dataset"], config["data_path"], False),
+                                      batch_size=int(config["data"]['batch_size']), shuffle=True, pin_memory=True)
 
     def evaluate(self, dataloader):
         self.model.eval()
@@ -76,7 +61,7 @@ class PytorchModelTrainer:
         return float(loss), float(acc)
 
     def validate(self):
-        # print("-- RUNNING VALIDATION --", flush=True)
+        print("-- RUNNING VALIDATION --", flush=True)
         try:
             training_loss, training_acc = self.evaluate(self.train_loader)
             test_loss, test_acc = self.evaluate(self.test_loader)
@@ -91,40 +76,41 @@ class PytorchModelTrainer:
             "test_loss": test_loss,
             "test_accuracy": test_acc,
         }
-        # print("-- VALIDATION COMPLETED --", flush=True)
+        print("-- VALIDATION COMPLETED --", flush=True)
         return report
-
-    def train(self, settings):
-        # print("-- RUNNING TRAINING --", flush=True)
-        self.model.train()
-        for i in range(settings['epochs']):
-            for x, y in self.train_loader:
-                if self.stop_event.is_set():
-                    raise ValueError("Round stop requested by the reducer!!!")
-                x, y = x.to(self.device), y.to(self.device)
-                self.optimizer.zero_grad()
-                if isinstance(self.model, googlenet.GoogLeNet):
-                    outputs, aux1, aux2 = self.model(x)
-                    error = self.loss(outputs, y) + 0.3 * self.loss(aux1, y) + 0.3 * self.loss(aux2, y)
-                else:
-                    output = self.model(x)
-                    error = self.loss(output, y)
-                error.backward()
-                self.optimizer.step()
-            self.scheduler.step()
-            # print(self.optimizer.param_groups[0]["lr"])
-        # print("-- TRAINING COMPLETED --", flush=True)
+    #
+    # def train(self, settings):
+    #     # print("-- RUNNING TRAINING --", flush=True)
+    #     self.model.train()
+    #     for i in range(settings['epochs']):
+    #         for x, y in self.train_loader:
+    #             if self.stop_event.is_set():
+    #                 raise ValueError("Round stop requested by the reducer!!!")
+    #             x, y = x.to(self.device), y.to(self.device)
+    #             self.optimizer.zero_grad()
+    #             if isinstance(self.model, googlenet.GoogLeNet):
+    #                 outputs, aux1, aux2 = self.model(x)
+    #                 error = self.loss(outputs, y) + 0.3 * self.loss(aux1, y) + 0.3 * self.loss(aux2, y)
+    #             else:
+    #                 output = self.model(x)
+    #                 error = self.loss(output, y)
+    #             error.backward()
+    #             self.optimizer.step()
+    #         self.scheduler.step()
+    #         # print(self.optimizer.param_groups[0]["lr"])
+    #     # print("-- TRAINING COMPLETED --", flush=True)
 
     def start_round(self, round_config, stop_event):
         self.stop_event = stop_event
         try:
             self.model.load_state_dict(np_to_weights(self.helper.load_model(self.global_model_path)))
             self.model.to(self.device)
-            # self.train(round_config)
             for i in range(round_config['epochs']):
                 print('current lr {:.5e}'.format(self.optimizer.param_groups[0]['lr']), flush=True)
                 train(self.train_loader, self.model, self.loss, self.optimizer, i + 1, self)
                 self.scheduler.step()
+                if self.stop_event.is_set():
+                    raise Exception("Stop requested")
             report = self.validate()
             self.model.cpu()
             self.helper.save_model(weights_to_np(self.model.state_dict()), self.global_model_path)
@@ -216,13 +202,6 @@ def validate(val_loader, model, criterion, model_trainer):
     return top1.avg
 
 
-def save_checkpoint(state, is_best, filename='checkpoint.pth.tar'):
-    """
-    Save the training model
-    """
-    torch.save(state, filename)
-
-
 class AverageMeter(object):
     """Computes and stores the average and current value"""
 
@@ -259,14 +238,12 @@ def accuracy(output, target, topk=(1,)):
 if __name__ == "__main__":
     with open('settings/settings-common.yaml', 'r') as file:
         try:
-            common_config = dict(yaml.safe_load(file))
+            client_config = dict(yaml.safe_load(file))
         except yaml.YAMLError as e:
             print('Failed to read model_config from settings file', flush=True)
             raise e
     print("Setting files loaded successfully !!!")
-    client_config = {"training": common_config["training"]}
-    client_config["training"]["model"] = common_config["model"]
-    client_config["training"]["cuda_device"] = "cuda:1"
+    client_config["training"]["cuda_device"] = "cuda:0"
     client_config["training"]["directory"] = "data/clients/" + "1" + "/"
     client_config["training"]["data_path"] = client_config["training"]["directory"] + "data.npz"
     client_config["training"]["global_model_path"] = client_config["training"]["directory"] + "weights.npz"
@@ -276,6 +253,7 @@ if __name__ == "__main__":
     model_trainer.stop_event = stop_round_event
     for i in range(200):
         print('current lr {:.5e}'.format(model_trainer.optimizer.param_groups[0]['lr']))
-        train(model_trainer.train_loader, model_trainer.model, model_trainer.loss, model_trainer.optimizer, i + 1, model_trainer)
+        train(model_trainer.train_loader, model_trainer.model, model_trainer.loss, model_trainer.optimizer, i + 1,
+              model_trainer)
         model_trainer.scheduler.step()
         validate(model_trainer.test_loader, model_trainer.model, model_trainer.loss, model_trainer)

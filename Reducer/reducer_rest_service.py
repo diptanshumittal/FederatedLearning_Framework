@@ -237,7 +237,7 @@ class ReducerRestService:
             if self.rounds == round_id and id in self.clients:
                 if not os.path.exists(self.tensorboard_path + "/" + id):
                     os.mkdir(self.tensorboard_path + "/" + id)
-                writer = SummaryWriter(self.tensorboard_path + "/" + self.training_id + "-" + id)
+                writer = SummaryWriter(self.tensorboard_path + "/" + self.training_id + "-" + self.clients[id].id)
                 self.clients[id].status = "Idle"
                 res = request.args.get("report", None)
                 if res is None:
@@ -393,7 +393,7 @@ class ReducerRestService:
                 processed_model += 1
                 os.remove(obj.object_name)
 
-            if model and not self.stop_training_event.is_set():
+            if model is not None and not self.stop_training_event.is_set():
                 model = helper.add_base_model(model, base_model, reducer_learning_rate)
                 model_name = str(uuid.uuid4()) + ".npz"
                 helper.save_model(model, model_name)
